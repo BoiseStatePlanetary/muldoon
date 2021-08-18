@@ -3,6 +3,6 @@ encounters"""
 
 __version__ = '0.0.0'
 __author__ = 'Brian Jackson <bjackson@boisestate.edu>'
-__all__ = ['muldoon']
+__all__ = ['muldoon', 'util']
 
 from .muldoon import *

@@ -2,6 +2,8 @@
 Utility functions for muldoon
 """
 
+import numpy as np
+
 def modified_lorentzian(t, baseline, slope, t0, DeltaP, Gamma):
     """
     Pressure profile for a vortex

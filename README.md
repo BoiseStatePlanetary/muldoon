@@ -1,4 +1,4 @@
-<p align="center"><img src="Muldoon.png" alt="Clever whirl." width="500"/></p>
+<p align="center"><img src="docs/Muldoon.png" alt="Clever whirl." width="500"/></p>
 
 # Muldoon
 

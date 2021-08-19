@@ -4,7 +4,7 @@ from astropy.convolution import convolve as astropy_convolve
 from scipy.stats import mode
 from statsmodels.robust import mad
 
-from .utils import modified_lorentzian
+import utils
 
 __all__ = ['met_timeseries']
 
@@ -112,10 +112,8 @@ class met_timeseries(object):
         Args:
             lorentzian_fwhm (float): the full-width/half-max of the matched
             filter
-            lorentzian_depth (float): the depth of the filter; probably wants
-            to be 1./np.pi
-            num_fwhms (float, optional): how many full-width/half-maxes to
-            generate matched filter; defaults to 6
+            lorentzian_depth (float): the depth of the filter; probably wants to be 1./np.pi
+            num_fwhms (float, optional): how many full-width/half-maxes to generate matched filter; defaults to 6
 
         Returns:
             Results from matched filter (float array)
@@ -124,7 +122,7 @@ class met_timeseries(object):
 
         lorentzian_time = np.arange(-num_fwhms/2*lorentzian_fwhm, 
                 num_fwhms/2.*lorentzian_fwhm, self.sampling)
-        lorentzian = modified_lorentzian(lorentzian_time, 0., 0., 0., 
+        lorentzian = utils.modified_lorentzian(lorentzian_time, 0., 0., 0., 
                 lorentzian_depth, lorentzian_fwhm)
 
         # Make sure the matched filter isn't wider than the signal itself

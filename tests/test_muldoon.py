@@ -24,7 +24,7 @@ window_size = 10*Gamma
 detrended_pressure = mt.detrend_pressure_timeseries(window_size)
 
 # Calculate filter
-conv = mt.apply_lorentzian_matched_filter(10.*Gamma, 1./np.pi)
+conv = mt.apply_lorentzian_matched_filter(2.*mt.sampling, 1./np.pi)
 
 def test_detrend_pressure_timeseries():
 

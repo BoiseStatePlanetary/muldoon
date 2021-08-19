@@ -161,7 +161,7 @@ class MetTimeseries(object):
             distance (int, optional): min number of point between peaks
 
         Returns:
-            indices of peaks and peak widths
+            list of times and pressures for each vortex
 
         """
 
@@ -176,7 +176,47 @@ class MetTimeseries(object):
         self.peak_indices = np.searchsorted(self.time, self.time[ex[0]][ind])
         self.peak_widths = pk_wds
 
-        return self.peak_indices, self.peak_widths
+        # Collect the vortices and sort by strength of convolution signal
+        srt_ind = np.argsort(self.convolution[self.peak_indices])[::-1]
+
+#       vortices = []
+#       for ind in srt_ind:
+#           # Use original, unfiltered data
+#           vortices.append(
+#           vortex = np.array([LTST_and_sol[ex[mx_ind] - matched_filter_num_fwhm*mx_width:
+#                               ex[mx_ind] + matched_filter_num_fwhm*mx_width],
+#                  sol_data['PRESSURE'][ex[mx_ind] - matched_filter_num_fwhm*mx_width:
+#                                       ex[mx_ind] + matched_filter_num_fwhm*mx_width]])
+
+        # Sort by strength of the signal
+        srt_ind = np.argsort(self.convolution[self.peak_indices])[::-1]
+        
+        return self.peak_indices[srt_ind], self.peak_widths[srt_ind]
+
+#   def fit_vortex(vortex, init_params, bounds, rescale_uncertainties=True, zoomed_in=None):
+
+#   x, y = condition_vortex(vortex)
+
+#   if(zoomed_in is not None):
+#       ind = np.abs(x - init_params[2]) < zoomed_in
+#       x = x[ind]
+#       y = y[ind]
+
+    # First fit out the long-term slope
+#   fit_params = np.polyfit(x, y, 1)
+#   detrended_data = y - np.polyval(fit_params, x)
+
+#   popt, pcov = curve_fit(modified_lorentzian, x, y, p0=init_params, bounds=bounds)
+#   ymod = modified_lorentzian(x, *popt)
+
+#   if(rescale_uncertainties):
+#       sd = mad(y - ymod)
+#       red_chisq = redchisqg(y, ymod, deg=5, sd=sd)
+
+#       pcov *= np.sqrt(red_chisq)
+
+#   return popt, np.sqrt(np.diag(pcov))
+
 
     def make_conditioned_data_figure(self, fig=None, figsize=(10, 10), 
             aspect_ratio=16./9):

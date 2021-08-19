@@ -10,7 +10,7 @@ Welcome to Muldoon's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   muldoon
+   api
 
 Indices and tables
 ==================

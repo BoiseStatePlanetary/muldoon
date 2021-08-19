@@ -5,5 +5,5 @@ API
 
 .. module:: muldoon
 
-.. autoclass:: muldoon.MetTimeseries
+.. autoclass:: met_timeseries.MetTimeseries
    :inherited-members:

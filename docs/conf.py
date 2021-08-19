@@ -12,8 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../src/muldoon/'))
-
+sys.path.insert(0, os.path.abspath('../muldoon/'))
 
 # -- Project information -----------------------------------------------------
 

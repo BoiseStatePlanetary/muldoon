@@ -144,6 +144,36 @@ class MetTimeseries(object):
 
         return self.convolution
 
+    def find_vortices(self, detection_threshold=5, distance=20):
+        """
+        Finds distinct peaks in the matched-filter convolution, presumably
+        vortex signals
+
+        Args: 
+            detection_threshold (float, optional): threshold for peak detection
+            distance (int, optional): min number of point between peaks
+
+        Returns:
+            times of peaks and peak widths
+
+        """
+
+        med = np.median(convolution)
+        md = mad(convolution)
+
+        convolution -= med
+        convolution /= md
+
+        ex = find_peaks(convolution, distance=distance)
+        ind = convolution[ex[0]] >= detection_threshold
+
+        pk_wds, _, _, _ = peak_widths(convolution, ex[0][ind])
+
+        self.peak_times = np.searchsorted(time, time[ex[0]][ind])
+        self.peak_widths = pk_wds
+
+        return self.peak_times, self.peak_widths
+
     def make_conditioned_data_figure(fig=None):
         """
         Make figure showing the data conditioning and analysis process -
@@ -152,3 +182,4 @@ class MetTimeseries(object):
         """
 
         return
+

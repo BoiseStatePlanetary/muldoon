@@ -39,3 +39,10 @@ def test_apply_lorentzian_matched_filter():
 
     # Make sure convolution returns a strong peak at the right time
     assert ((np.abs(mt.time[mx_ind]) < Gamma) & (mt.convolution[mx_ind] > 7.))
+
+def test_find_vortices():
+
+    # Test find_vortices
+    times, peak_widths = mt.find_vortices()
+    # Make sure the max peak in the convolution is where the vortex is
+    assert(mt.time[times[0]] < Gamma)

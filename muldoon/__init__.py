@@ -3,6 +3,7 @@ encounters"""
 
 __version__ = '0.0.0'
 __author__ = 'Brian Jackson <bjackson@boisestate.edu>'
-__all__ = ['met_timeseries', 'util']
+__all__ = ['met_timeseries', 'utils']
 
 from .met_timeseries import *
+from .utils import *

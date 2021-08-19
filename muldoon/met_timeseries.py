@@ -1,10 +1,11 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.signal import find_peaks, peak_widths, boxcar
 from astropy.convolution import convolve as astropy_convolve
 from scipy.stats import mode
 from statsmodels.robust import mad
 
-import utils
+import muldoon.utils as utils
 
 __all__ = ['MetTimeseries']
 
@@ -40,6 +41,12 @@ class MetTimeseries(object):
 
         # Time-series filters
         self.pressure_trend = None
+
+        # convolution of matched filter
+        self.convolution = None
+
+        self.peak_indices = None
+        self.peak_widths = None
 
     def detrend_pressure_timeseries(self, window_width):
         """
@@ -154,32 +161,95 @@ class MetTimeseries(object):
             distance (int, optional): min number of point between peaks
 
         Returns:
-            times of peaks and peak widths
+            indices of peaks and peak widths
 
         """
 
-        med = np.median(convolution)
-        md = mad(convolution)
+        if(self.convolution is None):
+            raise ValueError("Run apply_lorentzian_matched_filter first!")
 
-        convolution -= med
-        convolution /= md
+        ex = find_peaks(self.convolution, distance=distance)
+        ind = self.convolution[ex[0]] >= detection_threshold
 
-        ex = find_peaks(convolution, distance=distance)
-        ind = convolution[ex[0]] >= detection_threshold
+        pk_wds, _, _, _ = peak_widths(self.convolution, ex[0][ind])
 
-        pk_wds, _, _, _ = peak_widths(convolution, ex[0][ind])
-
-        self.peak_times = np.searchsorted(time, time[ex[0]][ind])
+        self.peak_indices = np.searchsorted(self.time, self.time[ex[0]][ind])
         self.peak_widths = pk_wds
 
-        return self.peak_times, self.peak_widths
+        return self.peak_indices, self.peak_widths
 
-    def make_conditioned_data_figure(fig=None):
+    def make_conditioned_data_figure(self, fig=None, figsize=(10, 10), 
+            aspect_ratio=16./9):
         """
         Make figure showing the data conditioning and analysis process -
         like Figure 1 of Jackson et al. (2021)
 
+        Args:
+            fig (matplotlib figure obj, optional): the figure object to use
+            figsize (2x1 list, optional): inches x inches figure size
+            aspect_ratio (float, optional): figure aspect ratio
+
+        Returns:
+            figure and all axes
+
         """
 
-        return
+        # Boise State official colors in hex
+        # https://www.boisestate.edu/communicationsandmarketing/brand-standards/colors/
+        BoiseState_blue = "#0033A0"
+        BoiseState_orange = "#D64309"
+
+        if(self.peak_indices is None):
+            raise ValueError("Run find_vortices first!")
+
+        if(fig is None):
+            fig = plt.figure(figsize=(figsize[0]*aspect_ratio, figsize[1]))
+
+        # Add axes
+        ax1 = fig.add_subplot(221)
+        ax2 = fig.add_subplot(223, sharex=ax1)
+        ax3 = fig.add_subplot(222)
+        ax4 = fig.add_subplot(224)
+
+        ### Raw data ###
+        ax1.plot(self.time, self.pressure, 
+                marker='.', ls='', color=BoiseState_blue)
+        ax1.text(0.05, 0.8, "(a)", fontsize=48, transform=ax1.transAxes)
+        ax1.grid(True)
+        ax1.tick_params(labelsize=24, labelbottom=False)
+        ax1.set_ylabel(r'$P\,\left({\rm Pa}\right)$', fontsize=36)
+
+
+        ### Filtered data ###
+        ax2.plot(self.time, self.detrended_pressure, 
+                marker='.', ls='', color=BoiseState_blue)
+        ax2.text(0.05, 0.05, "(b)", fontsize=48, transform=ax2.transAxes)
+        ax2.grid(True)
+        ax2.tick_params(labelsize=24)
+        ax2.set_xlabel("Time (hours)", fontsize=36)
+        ax2.set_ylabel(r'$\Delta P\,\left( {\rm Pa} \right)$', fontsize=36)
+
+
+        ### Convolution ###
+        ax3.plot(self.time, self.convolution, 
+                color=BoiseState_blue, ls='', marker='.')
+        ax3.text(0.05, 0.8, "(c)", fontsize=48, transform=ax3.transAxes)
+        ax3.grid(True)
+        ax3.yaxis.set_label_position("right")
+        ax3.yaxis.tick_right()
+        ax3.tick_params(labelsize=24, labelleft=False, labelright=True)
+        ax3.set_ylabel(r'$\left( F \ast \Delta P \right)$', fontsize=36)
+
+
+        ### Fit vortex ###
+        # Add lines in all plots highlighting the detections
+        for cur_ex in self.peak_indices:
+            ax1.axvline(self.time[cur_ex], 
+                    color=BoiseState_orange, zorder=-1, ls='--', lw=3)
+            ax2.axvline(self.time[cur_ex], 
+                    color=BoiseState_orange, zorder=-1, ls='--', lw=3)
+            ax3.axvline(self.time[cur_ex], 
+                    color=BoiseState_orange, zorder=-1, ls='--', lw=3)
+
+        return fig, ax1, ax2, ax3, ax4
 

@@ -142,7 +142,7 @@ class MetTimeseries(object):
         convolution =\
             np.convolve(self.detrended_pressure/\
             self.detrended_pressure_scatter, 
-                    lorentzian, mode='valid')
+                    lorentzian, mode='same')
 
         # Shift and normalize
         med = np.nanmedian(convolution)
@@ -193,31 +193,6 @@ class MetTimeseries(object):
                 "pressure": self.pressure[mn_ind:mx_ind]})
 
         return self.vortices
-
-#   def fit_vortex(vortex, init_params, bounds, rescale_uncertainties=True, zoomed_in=None):
-
-#   x, y = condition_vortex(vortex)
-
-#   if(zoomed_in is not None):
-#       ind = np.abs(x - init_params[2]) < zoomed_in
-#       x = x[ind]
-#       y = y[ind]
-
-    # First fit out the long-term slope
-#   fit_params = np.polyfit(x, y, 1)
-#   detrended_data = y - np.polyval(fit_params, x)
-
-#   popt, pcov = curve_fit(modified_lorentzian, x, y, p0=init_params, bounds=bounds)
-#   ymod = modified_lorentzian(x, *popt)
-
-#   if(rescale_uncertainties):
-#       sd = mad(y - ymod)
-#       red_chisq = redchisqg(y, ymod, deg=5, sd=sd)
-
-#       pcov *= np.sqrt(red_chisq)
-
-#   return popt, np.sqrt(np.diag(pcov))
-
 
     def make_conditioned_data_figure(self, fig=None, figsize=(10, 10), 
             aspect_ratio=16./9):

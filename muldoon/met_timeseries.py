@@ -142,7 +142,7 @@ class MetTimeseries(object):
         convolution =\
             np.convolve(self.detrended_pressure/\
             self.detrended_pressure_scatter, 
-                    lorentzian, mode='same')
+                    lorentzian, mode='valid')
 
         # Shift and normalize
         med = np.nanmedian(convolution)
@@ -174,27 +174,25 @@ class MetTimeseries(object):
 
         pk_wds, _, _, _ = peak_widths(self.convolution, ex[0][ind])
 
-        self.peak_indices = np.searchsorted(self.time, self.time[ex[0]][ind])
-        self.peak_widths = pk_wds
+        # Sort from largest peak to smallest
+        srt_ind = np.argsort(self.convolution[ex[0][ind]])[::-1]
+        self.peak_indices = ex[0][ind][srt_ind]
+        self.peak_widths = pk_wds[srt_ind]
 
-        # Collect the vortices and sort by strength of convolution signal
-#       srt_ind = np.argsort(self.convolution[self.peak_indices])[::-1]
+        self.vortices = []
+        for i in range(len(self.peak_indices)):
+            mn_ind = int(self.peak_indices[i] -\
+                    fwhm_factor/2*int(self.peak_widths[i]))
+            mx_ind = int(self.peak_indices[i] +\
+                    fwhm_factor/2*int(self.peak_widths[i]))
 
-#       vortices = []
-#       for ind in srt_ind:
+            print(mn_ind, mx_ind)
 
-#           # Use original, unfiltered data
-#           vortices.append([self.time[self.peak_indices[ind] -\
-#                   fwhm_factor/2*int(self.peak_widths[ind]):
-#                   self.peak_indices[ind]+\
-#                   fwhm_factor/2*int(self.peak_widths[ind])], 
-#                   self.pressure[self.peak_indices[ind] -\
-#                   fwhm_factor/2*int(self.peak_widths[ind]):
-#                   self.peak_indices[ind]+\
-#                   fwhm_factor/2*int(self.peak_widths[ind])]])
+            # Use original, unfiltered data
+            self.vortices.append({"time": self.time[mn_ind:mx_ind],
+                "pressure": self.pressure[mn_ind:mx_ind]})
 
-#       return self.peak_indices[srt_ind], self.peak_widths[srt_ind]
-        return self.peak_indices, self.peak_widths
+        return self.vortices
 
 #   def fit_vortex(vortex, init_params, bounds, rescale_uncertainties=True, zoomed_in=None):
 

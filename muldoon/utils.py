@@ -4,7 +4,6 @@ Utility functions for muldoon
 
 import numpy as np
 from scipy.optimize import curve_fit
-from statsmodels.robust import mad
 
 def modified_lorentzian(t, baseline, slope, t0, DeltaP, Gamma):
     """
@@ -90,7 +89,7 @@ def fit_vortex(vortex, init_params, bounds, sigma=None,
 
     if(rescale_uncertainties):
         if(sigma is None):
-            sd = mad(y - ymod)
+            sd = np.nanstd(y - ymod)
         else:
             sd = sigma
         red_chisq = redchisqg(y, ymod, deg=5, sd=sd)

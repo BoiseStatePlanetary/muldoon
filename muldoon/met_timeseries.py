@@ -39,6 +39,8 @@ class MetTimeseries(object):
         # Filtered pressure time-series
         self.detrended_pressure = None
 
+        self.detrended_pressure_scatter = None
+
         # Time-series filters
         self.pressure_trend = None
 
@@ -134,6 +136,9 @@ class MetTimeseries(object):
             Results from matched filter (float array)
 
         """
+
+        if(self.detrended_pressure_scatter is None):
+            raise ValueError("Run detrend_pressure_timeseries first!")
 
         lorentzian_time = np.arange(-num_fwhms/2*lorentzian_fwhm, 
                 num_fwhms/2.*lorentzian_fwhm, self.sampling)
@@ -314,8 +319,8 @@ class MetTimeseries(object):
 
         # Slope unlikely to exceed overall slope
         overall_slope = (y[-1] - y[0])/(x[-1] - x[0])
-        mn_slope = -slope_fac*overall_slope
-        mx_slope = slope_fac*overall_slope
+        mn_slope = -slope_fac*np.abs(overall_slope)
+        mx_slope = slope_fac*np.abs(overall_slope)
 
         mn_t0 = np.min(x)
         mx_t0 = np.max(x)

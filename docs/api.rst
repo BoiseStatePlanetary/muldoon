@@ -7,3 +7,6 @@ API
 
 .. autoclass:: met_timeseries.MetTimeseries
    :inherited-members:
+
+.. automodule:: muldoon.utils
+        :members:

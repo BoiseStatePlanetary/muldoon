@@ -60,7 +60,8 @@ def redchisqg(ydata,ymod,deg=2,sd=None):
     return chisq/nu
 
 
-def fit_vortex(vortex, init_params, bounds, rescale_uncertainties=True):
+def fit_vortex(vortex, init_params, bounds, sigma=None, 
+        rescale_uncertainties=True):
     """
     Fits modified Lorentzian to pressure profile
 
@@ -68,6 +69,7 @@ def fit_vortex(vortex, init_params, bounds, rescale_uncertainties=True):
         vortex (dict of float arrays): ["time"] - times, ["pressure"] - pressures
         init_params (float array): initial values including baseline, slope, initial central time, initial delta P, and initial duration
         bounds (float array): bounds on fit parameters listed in the same order as in init_params
+        sigma (float, float array, optional): per-point uncertainties
         rescale_uncertainties (bool, optional): whether to rescale uncertainties on fit parameters by sqrt(reduced chi-squared)
 
     Returns:
@@ -78,39 +80,71 @@ def fit_vortex(vortex, init_params, bounds, rescale_uncertainties=True):
     x = vortex["time"]
     y = vortex["pressure"]
 
-    popt, pcov = curve_fit(modified_lorentzian, x, y, p0=init_params,
-            bounds=bounds)
+    if(sigma is not None):
+        popt, pcov = curve_fit(modified_lorentzian, x, y, p0=init_params,
+                bounds=bounds, sigma=sigma)
+    else:
+        popt, pcov = curve_fit(modified_lorentzian, x, y, p0=init_params,
+                bounds=bounds)
     ymod = modified_lorentzian(x, *popt)
 
     if(rescale_uncertainties):
-        sd = mad(y - ymod)
+        if(sigma is None):
+            sd = mad(y - ymod)
+        else:
+            sd = sigma
         red_chisq = redchisqg(y, ymod, deg=5, sd=sd)
 
         pcov *= np.sqrt(red_chisq)
 
     return popt, np.sqrt(np.diag(pcov))
 
-def determine_init_params(vortex,
-                          init_baseline=None, init_slope=None, init_t0=None, init_DeltaP=None, init_Gamma=None):
+def write_out_plot_data(x, y, x_label, y_label, 
+        xerr=None, yerr=None, filename="out.csv", mode="w", test_mode=False):
+    """
+    Write out formatted text file of plot data
 
-    x, y = condition_vortex(vortex)
-    fit_params = np.polyfit(x, y, 1)
-    detrended_y = y - np.polyval(fit_params, x)
-   
-    if(init_baseline is None):
-        init_baseline = np.median(y)
+    Args:
+        x/y (float array): x/y points to write out
+        x_label/y_label (str): labels for columns
+        xerr/yerr (float array, optional): associated uncertainties
+        filename (str, optional): path of file to which to write out data
+        mode (str, optional): write mode; defaults to over-write
+        test_mode (bool, optional): whether to actually write out file
 
-    if(init_slope is None):
-        init_slope = fit_params[0]
+    """
 
-    if(init_t0 is None):
-        init_t0 = x[np.argmin(detrended_y)]
+    # Construct write string
+    write_str = "# %s, %s" % (x_label, y_label)
 
-    if(init_DeltaP is None):
-        init_DeltaP = 10.
+    if(xerr is not None):
+        write_str += ", %s_err" % x_label
+    if(yerr is not None):
+        write_str += ", %s_err" % y_label
 
-    if(init_Gamma is None):
-        init_Gamma = 2./3600.
+    write_str += "\n"
 
-    return np.array([init_baseline, init_slope, init_t0, init_DeltaP, init_Gamma])
+    for i in range(len(x) - 1):
+        write_str += "%g, %g" % (x[i], y[i])
+
+        if(xerr is not None):
+            write_str += ", %g" % (xerr[i])
+        if(yerr is not None):
+            write_str += ", %g" % (yerr[i])
+
+        write_str += "\n"
+
+    # Don't write a new-line character for the last entry
+    write_str += "%g, %g" % (x[-1], y[-1])
+    if(xerr is not None):
+        write_str += ", %g" % (xerr[i])
+    if(yerr is not None):
+        write_str += ", %g" % (yerr[i])
+
+    if(~test_mode):
+        f = open(filename, mode)
+        f.write(write_str)
+        f.close()
+
+    return write_str
 

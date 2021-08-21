@@ -194,14 +194,20 @@ class MetTimeseries(object):
 
             # Use original, unfiltered data
             self.vortices.append({"time": self.time[mn_ind:mx_ind],
-                "pressure": self.pressure[mn_ind:mx_ind]})
+                "pressure": self.pressure[mn_ind:mx_ind],
+                "pressure_scatter": self.detrended_pressure_scatter*\
+                        np.ones_like(self.time[mn_ind:mx_ind])})
 
         return self.vortices
 
-    def fit_all_vortices(self):
+    def fit_all_vortices(self, use_sigma=True):
         """
         Fit all vortices with modified Lorentzian and return fit parameters and
         uncertainties
+
+        Args:
+            use_sigma (bool, optional): whether to send detrended pressure scatter to curve_fit
+
 
         Returns:
             list of two arrays, the first with best fit parameters and the
@@ -223,7 +229,12 @@ class MetTimeseries(object):
             # Estimate bounds
             bounds = self._determine_bounds(self.vortices[i], init_params)
 
-            popt, unc = utils.fit_vortex(self.vortices[i], init_params, bounds)
+            if(use_sigma):
+                popt, unc = utils.fit_vortex(self.vortices[i], init_params, 
+                        bounds, sigma=self.vortices[i]["pressure_scatter"])
+            else:
+                popt, unc = utils.fit_vortex(self.vortices[i], init_params, 
+                        bounds)
 
             self.popts.append(popt)
             self.uncs.append(unc)
@@ -319,17 +330,21 @@ class MetTimeseries(object):
         return ([mn_baseline, mn_slope, mn_t0, mn_deltaP, mn_Gamma],
                 [mx_baseline, mx_slope, mx_t0, mx_deltaP, mx_Gamma])
 
-    def make_conditioned_data_figure(self, vortex, fig=None, figsize=(10, 10), 
-            aspect_ratio=16./9):
+    def make_conditioned_data_figure(self, which_vortex=0, 
+            fig=None, figsize=(10, 10), aspect_ratio=16./9,
+            pressure_units="Pa", time_units="Hours", vortex_time_units="s",
+            write_filename=None):
         """
         Make figure showing the data conditioning and analysis process -
         like Figure 1 of Jackson et al. (2021)
 
         Args:
-            vortex (list of float arrays): which vortex to plot
+            which_vortex (int): which vortex within vortices to plot
             fig (matplotlib figure obj, optional): the figure object to use
             figsize (2x1 list, optional): inches x inches figure size
             aspect_ratio (float, optional): figure aspect ratio
+            pressure/time/vortex_time_units (str, optional): units to label axes
+            write_filename (str, optional): filename stem to use for writing out
 
         Returns:
             figure and all axes
@@ -337,12 +352,14 @@ class MetTimeseries(object):
         """
 
         # Boise State official colors in hex
-        # https://www.boisestate.edu/communicationsandmarketing/brand-standards/colors/
+        # boisestate.edu/communicationsandmarketing/brand-standards/colors/
         BoiseState_blue = "#0033A0"
         BoiseState_orange = "#D64309"
 
         if(self.peak_indices is None):
             raise ValueError("Run find_vortices first!")
+        if(self.popts is None):
+            raise ValueError("Run fit_all_vortices first!")
 
         if(fig is None):
             fig = plt.figure(figsize=(figsize[0]*aspect_ratio, figsize[1]))
@@ -359,8 +376,13 @@ class MetTimeseries(object):
         ax1.text(0.05, 0.8, "(a)", fontsize=48, transform=ax1.transAxes)
         ax1.grid(True)
         ax1.tick_params(labelsize=24, labelbottom=False)
-        ax1.set_ylabel(r'$P\,\left({\rm Pa}\right)$', fontsize=36)
+        ax1.set_ylabel(r'$P\,\left({\rm %s}\right)$' % (pressure_units), 
+                fontsize=36)
 
+        if(write_filename is not None):
+            filename = write_filename + "panel_a.csv"
+            utils.write_out_plot_data(self.time, self.pressure, 
+                    "Time", "Pressure", filename=filename)
 
         ### Filtered data ###
         ax2.plot(self.time, self.detrended_pressure, 
@@ -368,8 +390,14 @@ class MetTimeseries(object):
         ax2.text(0.05, 0.05, "(b)", fontsize=48, transform=ax2.transAxes)
         ax2.grid(True)
         ax2.tick_params(labelsize=24)
-        ax2.set_xlabel("Time (hours)", fontsize=36)
-        ax2.set_ylabel(r'$\Delta P\,\left( {\rm Pa} \right)$', fontsize=36)
+        ax2.set_xlabel("Time (%s)" % (time_units), fontsize=36)
+        ax2.set_ylabel(r'$\Delta P\,\left( {\rm %s} \right)$' %\
+                (pressure_units), fontsize=36)
+
+        if(write_filename is not None):
+            filename = write_filename + "panel_b.csv"
+            utils.write_out_plot_data(self.time, self.detrended_pressure,
+                    "Time", "Detrended_Pressure", filename=filename)
 
 
         ### Convolution ###
@@ -382,6 +410,11 @@ class MetTimeseries(object):
         ax3.tick_params(labelsize=24, labelleft=False, labelright=True)
         ax3.set_ylabel(r'$\left( F \ast \Delta P \right)$', fontsize=36)
 
+        if(write_filename is not None):
+            filename = write_filename + "panel_c.csv"
+            utils.write_out_plot_data(self.time, self.convolution,
+                    "Time", "Convolution", filename=filename)
+
 
         # Add lines in all plots highlighting the detections
         for cur_ex in self.peak_indices:
@@ -392,7 +425,44 @@ class MetTimeseries(object):
             ax3.axvline(self.time[cur_ex], 
                     color=BoiseState_orange, zorder=-1, ls='--', lw=3)
 
+
         ### Fit vortex ###
+        vortex_model =\
+                utils.modified_lorentzian(self.vortices[which_vortex]["time"], 
+                        0., 0., *self.popts[which_vortex][2:])
+        # Subtract baseline
+        vortex_model -= self.popts[which_vortex][0]
+
+        x = self.vortices[which_vortex]["time"] - self.popts[which_vortex][2]
+        ydata = self.vortices[which_vortex]["pressure"] -\
+                np.polyval(self.popts[which_vortex][0:2][::-1],
+                        self.vortices[which_vortex]["time"])
+        yerr = self.vortices[which_vortex]["pressure_scatter"]
+        # Plot data with error bars
+        ax4.errorbar(x, ydata, yerr=yerr,
+                ls='', marker='o', color=BoiseState_blue)
+        # Plot model fit
+        ax4.plot(x, vortex_model, lw=3, color=BoiseState_orange, zorder=-1)
+
+        ax4.text(0.05, 0.05, "(d)", fontsize=48, transform=ax4.transAxes)
+        ax4.grid(True)
+        ax4.yaxis.set_label_position("right")
+        ax4.yaxis.tick_right()
+        ax4.tick_params(labelsize=24, labelleft=False, labelright=True)
+
+        ax4.set_xlabel(r'$t - t_0\,\left( {\rm %s} \right)$' %\
+                (vortex_time_units), fontsize=36)
+        ax4.set_ylabel(r'$\Delta P\,\left( {\rm %s} \right)$' %\
+                (pressure_units), fontsize=36)
+
+        if(write_filename is not None):
+            filename = write_filename + "panel_d_data.csv"
+            utils.write_out_plot_data(x, ydata, "Time", "DeltaP", 
+                    yerr=yerr, filename=filename)
+
+            filename = write_filename + "panel_d_model.csv"
+            utils.write_out_plot_data(x, vortex_model, "Time", "DeltaP", 
+                    filename=filename)
 
         return fig, ax1, ax2, ax3, ax4
 

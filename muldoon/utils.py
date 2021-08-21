@@ -90,3 +90,27 @@ def fit_vortex(vortex, init_params, bounds, rescale_uncertainties=True):
 
     return popt, np.sqrt(np.diag(pcov))
 
+def determine_init_params(vortex,
+                          init_baseline=None, init_slope=None, init_t0=None, init_DeltaP=None, init_Gamma=None):
+
+    x, y = condition_vortex(vortex)
+    fit_params = np.polyfit(x, y, 1)
+    detrended_y = y - np.polyval(fit_params, x)
+   
+    if(init_baseline is None):
+        init_baseline = np.median(y)
+
+    if(init_slope is None):
+        init_slope = fit_params[0]
+
+    if(init_t0 is None):
+        init_t0 = x[np.argmin(detrended_y)]
+
+    if(init_DeltaP is None):
+        init_DeltaP = 10.
+
+    if(init_Gamma is None):
+        init_Gamma = 2./3600.
+
+    return np.array([init_baseline, init_slope, init_t0, init_DeltaP, init_Gamma])
+

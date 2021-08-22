@@ -24,4 +24,5 @@ Changelog:
 ++++++++++
 
 **0.1.0 (2021 Aug 22)**
+
 * Added read_data module

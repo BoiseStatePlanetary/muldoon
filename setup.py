@@ -143,7 +143,7 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy', 'scipy', 'astropy'],  # Optional
+    install_requires=['numpy', 'scipy', 'astropy', 'pandas'],  # Optional
 
 
     # List additional groups of dependencies here (e.g. development

@@ -4,6 +4,7 @@ Utility functions for muldoon
 
 import numpy as np
 from scipy.optimize import curve_fit
+from scipy.stats import mode
 
 def modified_lorentzian(t, baseline, slope, t0, DeltaP, Gamma):
     """
@@ -147,3 +148,58 @@ def write_out_plot_data(x, y, x_label, y_label,
 
     return write_str
 
+def find_gaps(time):
+    """
+    Finds gaps in the time-series
+
+    Args:
+        time (float array): time array
+
+    """
+
+    # Calculate all the delta t's
+    delta_ts = (time[1:] - time[0:-1])
+    ind = delta_ts > 0.
+
+    # Are there any delta t's bigger than the typical sampling?
+    mod = mode(delta_ts[ind])[0][0]
+
+    # If there are no gaps in the time-series
+    ind = np.argwhere(~np.isclose(delta_ts, mod, rtol=0., atol=mod))[:,0]
+    if(len(delta_ts[ind]) == 0):
+        return []
+    else:
+        return ind
+
+def break_at_gaps(time, data):
+    """
+    Break the time-series into pieces if there are gaps
+
+    Args:
+        time/data (float arrays): time and data time-series
+
+    Returns:
+        the time-series broken into lists at the gaps
+
+    """
+
+    gaps = find_gaps(time)
+
+    if(len(gaps) == 0):
+        return [time], [data]
+    else:
+        ret_time = list()
+        ret_data = list()
+
+        last_gap = 0
+        for i in range(len(gaps)):
+
+            ret_time.append(time[last_gap:gaps[i]+1])
+            ret_data.append(data[last_gap:gaps[i]+1])
+
+            last_gap = gaps[i]+1
+
+        ret_time.append(time[gaps[-1]+1:])
+        ret_data.append(data[gaps[-1]+1:])
+
+        return ret_time, ret_data

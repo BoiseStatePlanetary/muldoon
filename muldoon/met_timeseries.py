@@ -56,32 +56,52 @@ class MetTimeseries(object):
         self.popts = None
         self.uncs = None
 
-    def detrend_pressure_timeseries(self, window_width):
+    def detrend_pressure_timeseries(self, window_width, 
+            deal_with_gaps=True):
         """
         Applies boxcar filter to pressure time-series
 
         Args:
             window_width (float): width of window in the same units as time
+            deal_with_gaps (bool, optional): whether to check for gaps
 
         Returns:
             detrended pressure time-series (float array)
 
         """
 
+        # Queue up to deal with gaps
+        local_time = [self.time]
+        local_pressure = [self.pressure]
+
+        if(deal_with_gaps):
+            local_time, local_pressure = utils.break_at_gaps(self.time,
+                    self.pressure)
+            
         # Calculate number of points for window_width
-        delta_t = np.median(self.time[1:] - self.time[0:-1])
-        window_size = int(window_width/delta_t)
+        window_size = int(window_width/self.sampling)
         # Check that window_size is odd
         if(window_size % 2 == 0): 
             window_size += 1
 
         self.window_size = window_size
 
-        self.pressure_trend = astropy_convolve(self.pressure,
-                boxcar(window_size), boundary='extend', 
-                preserve_nan=True)
+        # Empty out the Nones
+        self.detrended_pressure = np.array([])
 
-        self.detrended_pressure = self.pressure - self.pressure_trend
+        # Detrend, piece at a time
+        for i in range(len(local_time)):
+
+            local_pressure_trend = astropy_convolve(local_pressure[i],
+                    boxcar(window_size), boundary='extend', 
+                    preserve_nan=True)
+            self.pressure_trend = np.append(self.pressure_trend,
+                    local_pressure_trend)
+
+            self.detrended_pressure =\
+                    np.append(self.detrended_pressure, 
+                            local_pressure[i] - local_pressure_trend)
+
         self.detrended_pressure_scatter = np.nanstd(self.detrended_pressure)
 
         return self.detrended_pressure

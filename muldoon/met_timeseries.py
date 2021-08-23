@@ -217,11 +217,13 @@ class MetTimeseries(object):
             mx_ind = int(self.peak_indices[i] +\
                     fwhm_factor/2*int(self.peak_widths[i]))
 
-            # Use original, unfiltered data
-            self.vortices.append({"time": self.time[mn_ind:mx_ind],
-                "pressure": self.pressure[mn_ind:mx_ind],
-                "pressure_scatter": self.detrended_pressure_scatter*\
-                        np.ones_like(self.time[mn_ind:mx_ind])})
+            # Make sure there are enough points in the vortex
+            if(mx_ind - mn_ind > 5):
+                # Use original, unfiltered data
+                self.vortices.append({"time": self.time[mn_ind:mx_ind],
+                    "pressure": self.pressure[mn_ind:mx_ind],
+                    "pressure_scatter": self.detrended_pressure_scatter*\
+                            np.ones_like(self.time[mn_ind:mx_ind])})
 
         return self.vortices
 

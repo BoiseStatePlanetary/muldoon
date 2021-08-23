@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**0.3.0 (2021 Aug 23)**
+
+* Added plot_vortex and make figures
+
 **0.2.1 (2021 Aug 22)**
 
 * Removed bug in make_conditioned_data_figure

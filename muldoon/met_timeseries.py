@@ -227,14 +227,19 @@ class MetTimeseries(object):
 
         return self.vortices
 
-    def fit_all_vortices(self, use_sigma=True):
+    def fit_all_vortices(self, 
+            filepath=None, figsize=(10, 10), aspect_ratio=16./9,
+            pressure_units="Pa", time_units="Hours", vortex_time_units="s"):
         """
         Fit all vortices with modified Lorentzian and return fit parameters and
         uncertainties
 
         Args:
-            use_sigma (bool, optional): whether to send detrended pressure scatter to curve_fit
-
+            filepath (str, optional): If not None, gives the filepath and filename stem to which to write vortex figures
+            fig (matplotlib figure, optional): figure into which to plot
+            figsize (float tuple, optional): size of figure
+            aspect_ratio (float, optional): figure aspect ratio
+            pressure/time/vortex_time_units (str, optional): axes labels
 
         Returns:
             list of two arrays, the first with best fit parameters and the
@@ -256,16 +261,57 @@ class MetTimeseries(object):
             # Estimate bounds
             bounds = self._determine_bounds(self.vortices[i], init_params)
 
-            if(use_sigma):
+            try:
                 popt, unc = utils.fit_vortex(self.vortices[i], init_params, 
                         bounds, sigma=self.vortices[i]["pressure_scatter"])
-            else:
-                popt, unc = utils.fit_vortex(self.vortices[i], init_params, 
-                        bounds)
 
-            self.popts.append(popt)
-            self.uncs.append(unc)
+                self.popts.append(popt)
+                self.uncs.append(unc)
 
+                # Make figure
+                if(filepath is not None):
+                    fig = plt.figure(figsize=(figsize[0]*aspect_ratio,
+                        figsize[1]))
+
+                    ax = fig.add_subplot(111)
+
+                    # Remember! Times are in hours!
+                    time = self.vortices[i]["time"]
+                    ydata = self.vortices[i]["pressure"] - popt[0]
+                    yerr = self.vortices[i]["pressure_scatter"]
+                    model_func = lambda time, popt:\
+                            utils.modified_lorentzian(time, *popt) - popt[0]
+                    model = utils.plot_vortex(time, 
+                            popt[2], ydata, model_func, popt, ax, yerr=yerr)
+
+                    ax.text(0.05, 0.05, "%s, vortex %i" % (filepath, i),
+                            fontsize=24, transform=ax.transAxes)
+                    ax.grid(True)
+                    ax.tick_params(labelsize=24)
+                    ax.set_xlabel(r'$t - t_0\,\left( {\rm %s} \right)$' %\
+                        (vortex_time_units), fontsize=36)
+                    ax.set_ylabel(r'$\Delta P\,\left( {\rm %s} \right)$' %\
+                        (pressure_units), fontsize=36)
+
+                    fig.savefig("%s_vortex%i.jpg" % (filepath, i), 
+                            bbox_inches="tight", dpi=500)
+
+                    # Write out data
+                    filename = filepath + "_data_vortex%i.csv" % (i)
+                    utils.write_out_plot_data((time - popt[2])*3600., 
+                            ydata - popt[0],
+                            "Time", "DeltaP", yerr=yerr, filename=filename)
+
+                    filename = filepath + "_model_vortex%i.csv" % (i)
+                    utils.write_out_plot_data((time - popt[2])*3600., model, 
+                            "Time", "DeltaP", filename=filename)
+
+            except:
+                print("fit_all_vortices: vortex %i couldn't be fit!" % i)
+
+            # Reset ax
+            fig = None
+            ax = None
         return self.popts, self.uncs
 
     def _determine_init_params(self, vortex, 
@@ -454,22 +500,16 @@ class MetTimeseries(object):
 
 
         ### Fit vortex ###
-        vortex_model =\
-                utils.modified_lorentzian(self.vortices[which_vortex]["time"], 
-                        *self.popts[which_vortex]) -\
-                self.popts[which_vortex][0]
+        model_func = lambda time, popt:\
+                utils.modified_lorentzian(time, *popt) - popt[0]
 
         # Remember! Times are in hours!
-        x = (self.vortices[which_vortex]["time"] -
-                self.popts[which_vortex][2])*3600.
+        time = self.vortices[which_vortex]["time"]
         ydata = self.vortices[which_vortex]["pressure"] -\
                 self.popts[which_vortex][0]
         yerr = self.vortices[which_vortex]["pressure_scatter"]
-        # Plot data with error bars
-        ax4.errorbar(x, ydata, yerr=yerr,
-                ls='', marker='o', color=BoiseState_blue)
-        # Plot model fit
-        ax4.plot(x, vortex_model, lw=3, color=BoiseState_orange, zorder=-1)
+        model = utils.plot_vortex(time, self.popts[which_vortex][2], ydata, 
+                model_func, self.popts[which_vortex], ax4, yerr=yerr)
 
         ax4.text(0.05, 0.05, "(d)", fontsize=48, transform=ax4.transAxes)
         ax4.grid(True)

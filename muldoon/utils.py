@@ -203,3 +203,38 @@ def break_at_gaps(time, data):
         ret_data.append(data[gaps[-1]+1:])
 
         return ret_time, ret_data
+
+def plot_vortex(time, t0, data, model_func, popt, ax, yerr=None):
+    """
+    Make plot of vortex and model
+
+    Args:
+        time/data (float arrays): time-series to plot and model fit
+        t0 (float): the central time of the vortex signal
+        model_func (function): function that will generate model
+        popt (float array): model parameters
+        ax (matplotlib axis): ax to which to plot
+    
+    Returns:
+        model (float array)
+
+    """
+
+    # Boise State official colors in hex
+    # boisestate.edu/communicationsandmarketing/brand-standards/colors/
+    BoiseState_blue = "#0033A0"
+    BoiseState_orange = "#D64309"
+
+    ### Fit vortex ###
+    model = model_func(time, popt)
+    if(yerr is not None):
+        ax.errorbar((time - t0)*3600., data, yerr=yerr, 
+                ls='', marker='o', color=BoiseState_blue)
+    else:
+        ax.plot((time - t0)*3600., data, 
+                ls='', marker='o', color=BoiseState_blue)
+
+    # Plot model fit
+    ax.plot((time - t0)*3600., model, lw=3, color=BoiseState_orange, zorder=-1)
+
+    return model

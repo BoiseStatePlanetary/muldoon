@@ -456,14 +456,14 @@ class MetTimeseries(object):
         ### Fit vortex ###
         vortex_model =\
                 utils.modified_lorentzian(self.vortices[which_vortex]["time"], 
-                        0., 0., *self.popts[which_vortex][2:])
-        # Subtract baseline
-        vortex_model -= self.popts[which_vortex][0]
+                        *self.popts[which_vortex]) -\
+                self.popts[which_vortex][0]
 
-        x = self.vortices[which_vortex]["time"] - self.popts[which_vortex][2]
+        # Remember! Times are in hours!
+        x = (self.vortices[which_vortex]["time"] -
+                self.popts[which_vortex][2])*3600.
         ydata = self.vortices[which_vortex]["pressure"] -\
-                np.polyval(self.popts[which_vortex][0:2][::-1],
-                        self.vortices[which_vortex]["time"])
+                self.popts[which_vortex][0]
         yerr = self.vortices[which_vortex]["pressure_scatter"]
         # Plot data with error bars
         ax4.errorbar(x, ydata, yerr=yerr,

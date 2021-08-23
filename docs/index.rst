@@ -23,6 +23,14 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**0.2.1 (2021 Aug 22)**
+
+* Removed bug in make_conditioned_data_figure
+
+**0.2.0 (2021 Aug 22)**
+
+* Added some capabilities to deal with gaps in data
+
 **0.1.0 (2021 Aug 22)**
 
 * Added read_data module

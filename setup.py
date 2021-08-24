@@ -1,4 +1,4 @@
-"""A setuptools based setup module.
+"e""A setuptools based setup module.
 
 See:
 https://packaging.python.org/guides/distributing-packages-using-setuptools/
@@ -143,7 +143,7 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy', 'scipy', 'astropy', 'pandas'],  # Optional
+    install_requires=['numpy', 'scipy', 'astropy', 'pandas', 'statsmodels'],  # Optional
 
 
     # List additional groups of dependencies here (e.g. development

@@ -23,6 +23,22 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**0.3.4 (2021 Aug 24)**
+
+* Fixed _which_primary_sol
+
+**0.3.3 (2021 Aug 24)**
+
+* Fixed setup.py
+
+**0.3.2 (2021 Aug 24)**
+
+* Fixed setup.py
+
+**0.3.1 (2021 Aug 24)**
+
+* Added statsmodels to required package list
+
 **0.3.0 (2021 Aug 23)**
 
 * Added plot_vortex and make figures

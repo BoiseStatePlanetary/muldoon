@@ -5,7 +5,7 @@ A collections of routines to read in data from various missions
 import numpy as np
 import pandas as pd
 
-def read_Perseverance_MEDA_data(filename):
+def read_Perseverance_MEDA_data(filename, sol=None):
     """
     Read in Perseverance MEDA data - https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/
 
@@ -28,7 +28,9 @@ def read_Perseverance_MEDA_data(filename):
             sol (int) associated with that file
         """
 
-        return int(filename[6:10])
+        ind = filename.find("WE__")
+
+        return int(filename[ind+4:ind+8])
 
     def _make_seconds_since_midnight(filename):
         """
@@ -42,7 +44,8 @@ def read_Perseverance_MEDA_data(filename):
 
         """
 
-        primary_sol = _which_sol(filename)
+        if(sol is None):
+            primary_sol = _which_sol(filename)
         data = pd.read_csv(filename)
 
         # Grab the sols and times associated with each row

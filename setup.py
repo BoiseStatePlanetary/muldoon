@@ -1,4 +1,4 @@
-"e""A setuptools based setup module.
+"""A setuptools based setup module.
 
 See:
 https://packaging.python.org/guides/distributing-packages-using-setuptools/
@@ -37,7 +37,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.3.0',  # Required
+    version='0.3.4',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -129,7 +129,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(where='muldoon'),  # Required
+    packages=find_packages(),
 
     # Specify which Python versions you support. In contrast to the
     # 'Programming Language' classifiers above, 'pip install' will check this

@@ -398,7 +398,7 @@ class MetTimeseries(object):
         mx_deltaP = np.max(detrended_y) - np.min(detrended_y)
 
         mn_Gamma = 2.*self.sampling # Nyquist sampling
-        mx_Gamma = np.min([Gamma_fac*init_params[4], x[-1] - x[0]])
+        mx_Gamma = np.max([Gamma_fac*init_params[4], x[-1] - x[0]])
 
         return ([mn_baseline, mn_slope, mn_t0, mn_deltaP, mn_Gamma],
                 [mx_baseline, mx_slope, mx_t0, mx_deltaP, mx_Gamma])
@@ -532,4 +532,3 @@ class MetTimeseries(object):
                     filename=filename)
 
         return fig, ax1, ax2, ax3, ax4
-

@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**0.3.5 (2021 Aug 25)**
+
+* Extended maximum allowed Gamma in _determine_bounds
+
 **0.3.4 (2021 Aug 24)**
 
 * Fixed _which_primary_sol

@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**0.4.1 (2021 Aug 27)**
+
+* Fixed units on Gamma in injection_recovery
+
 **0.4.0 (2021 Aug 27)**
 
 * Added some parameters to met_timeseries

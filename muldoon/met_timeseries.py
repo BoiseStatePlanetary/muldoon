@@ -109,6 +109,7 @@ class MetTimeseries(object):
             local_pressure_trend = astropy_convolve(local_pressure[i],
                     boxcar(window_size), boundary='extend', 
                     preserve_nan=True)
+
             if(self.pressure_trend is None):
                 self.pressure_trend = local_pressure_trend
             else:
@@ -612,4 +613,5 @@ class MetTimeseries(object):
                         detection_statistics[i,j,k] = 1.
         detection_statistics = np.mean(detection_statistics, axis=2)
 
-        return deltaP_grid, Gamma_grid, detection_statistics
+        # Convert Gamma back to seconds
+        return deltaP_grid, Gamma_grid*3600., detection_statistics

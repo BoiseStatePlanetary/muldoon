@@ -23,6 +23,15 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**0.4.0 (2021 Aug 27)**
+
+* Added some parameters to met_timeseries
+* Added injection/recovery test to utils
+
+**0.3.6 (2021 Aug 27)**
+
+* Removed bug which allowed pressure_trend to include None
+
 **0.3.5 (2021 Aug 25)**
 
 * Extended maximum allowed Gamma in _determine_bounds

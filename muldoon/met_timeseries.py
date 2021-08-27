@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.random import choice
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks, peak_widths, boxcar
 from astropy.convolution import convolve as astropy_convolve
@@ -38,11 +39,21 @@ class MetTimeseries(object):
 
         # Filtered pressure time-series
         self.detrended_pressure = None
-
+        self.window_width = None
         self.detrended_pressure_scatter = None
 
         # Time-series filters
         self.pressure_trend = None
+
+        # matched filter parameters
+        self.matched_filter_fwhm = None
+        self.matched_filter_depth = None
+
+        # detection threshold
+        self.detection_threshold = None
+
+        # FWHMs for vortices that are detected
+        self.num_fwhms = None
 
         # convolution of matched filter
         self.convolution = None
@@ -53,6 +64,7 @@ class MetTimeseries(object):
         # Collection of time-series for individual vortices
         self.vortices = None
 
+        # Vortex fit parameters and uncertainties
         self.popts = None
         self.uncs = None
 
@@ -69,6 +81,8 @@ class MetTimeseries(object):
             detrended pressure time-series (float array)
 
         """
+
+        self.window_width = window_width
 
         # Queue up to deal with gaps
         local_time = [self.time]
@@ -95,8 +109,11 @@ class MetTimeseries(object):
             local_pressure_trend = astropy_convolve(local_pressure[i],
                     boxcar(window_size), boundary='extend', 
                     preserve_nan=True)
-            self.pressure_trend = np.append(self.pressure_trend,
-                    local_pressure_trend)
+            if(self.pressure_trend is None):
+                self.pressure_trend = local_pressure_trend
+            else:
+                self.pressure_trend = np.append(self.pressure_trend,
+                        local_pressure_trend)
 
             self.detrended_pressure =\
                     np.append(self.detrended_pressure, 
@@ -138,17 +155,15 @@ class MetTimeseries(object):
 
         return write_str
 
-    def apply_lorentzian_matched_filter(self, lorentzian_fwhm,
-            lorentzian_depth, num_fwhms=6.):
+    def apply_lorentzian_matched_filter(self, lorentzian_fwhm=None,
+            lorentzian_depth=1./np.pi, num_fwhms=6.):
         """
         Applies Lorentzian matched filter to detrended pressure to find
         vortices
 
         Args:
-            lorentzian_fwhm (float): the full-width/half-max of the matched
-            filter
-            lorentzian_depth (float): the depth of the filter; probably wants
-            to be 1./np.pi
+            lorentzian_fwhm (float, optional): the full-width/half-max of the matched filter
+            lorentzian_depth (float, optional): the depth of the filter; probably wants to be 1./np.pi
             num_fwhms (float, optional): how many full-width/half-maxes to
             generate matched filter; defaults to 6
 
@@ -159,6 +174,14 @@ class MetTimeseries(object):
 
         if(self.detrended_pressure_scatter is None):
             raise ValueError("Run detrend_pressure_timeseries first!")
+
+        if(lorentzian_fwhm is None):
+            lorentzian_fwhm = 2.*self.sampling
+
+        self.matched_filter_fwhm = lorentzian_fwhm
+        self.matched_filter_depth = lorentzian_depth
+
+        self.num_fwhms = num_fwhms
 
         lorentzian_time = np.arange(-num_fwhms/2*lorentzian_fwhm, 
                 num_fwhms/2.*lorentzian_fwhm, self.sampling)
@@ -196,6 +219,8 @@ class MetTimeseries(object):
             list of times and pressures for each vortex
 
         """
+
+        self.detection_threshold = detection_threshold
 
         if(self.convolution is None):
             raise ValueError("Run apply_lorentzian_matched_filter first!")
@@ -532,3 +557,59 @@ class MetTimeseries(object):
                     filename=filename)
 
         return fig, ax1, ax2, ax3, ax4
+
+    def pressure_timeseries_injection_recovery(self,
+        mn_deltaP=0.1, mx_deltaP=10., num_deltaPs=10,
+        mn_Gamma=2.0, mx_Gamma=200., num_Gammas=10,
+        num_trials=10,
+        num_fwhms=3.):
+        """
+        Performs an injection/recovery for vortex signal within a given raw pressure time-series
+
+        Args:
+            mn/mx (floats, optional): min/max values for deltaP and Gamma arrays
+            num (int, optional): number of points in the deltaP/Gamma arrays
+            num_trials (int, optional): number of trials at each deltaP/Gamma
+            num_fwhms (float, optional): number of FWHMs for matched_filter
+
+        Returns:
+            deltaP, Gamma, and detection fraction arrays (float arrays)
+        """
+
+        deltaP_grid = 10.**(np.linspace(np.log10(mn_deltaP), np.log10(mx_deltaP), num_deltaPs))
+        Gamma_grid = 10.**(np.linspace(np.log10(mn_Gamma), np.log10(mx_Gamma), num_Gammas))/3600. # convert to hours
+
+        # Whether or not a detection was made
+        detection_statistics =\
+                np.zeros([num_deltaPs, num_Gammas, num_trials])
+        for i in range(num_deltaPs):
+            for j in range(num_Gammas):
+                for k in range(num_trials):
+
+                    # Generate vortex at random time
+                    correct_t0 = choice(self.time)
+                    vortex_signal = utils.modified_lorentzian(self.time, 0., 
+                            0., correct_t0, deltaP_grid[i], Gamma_grid[j])
+
+                    # Inject into flipped detrended time-series
+                    synthetic_time_series = self.detrended_pressure +\
+                            vortex_signal + self.pressure_trend
+
+                    # Make new object
+                    new_mt = MetTimeseries(self.time, synthetic_time_series)
+                    new_mt.detrend_pressure_timeseries(self.window_width)
+
+                    new_mt.apply_lorentzian_matched_filter(
+                            self.matched_filter_fwhm, 
+                            self.matched_filter_depth, num_fwhms=self.num_fwhms)
+
+                    new_mt.find_vortices(detection_threshold=\
+                            self.detection_threshold)
+
+                    # If find_vortices found the vortex
+                    if(np.any(np.abs(new_mt.time[new_mt.peak_indices] -\
+                            correct_t0) < Gamma_grid[j])):
+                        detection_statistics[i,j,k] = 1.
+        detection_statistics = np.mean(detection_statistics, axis=2)
+
+        return deltaP_grid, Gamma_grid, detection_statistics

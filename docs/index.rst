@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**0.4.2 (2021 Aug 28)**
+
+* Fixed axis label on make_conditioned_data_plot
+
 **0.4.1 (2021 Aug 27)**
 
 * Fixed units on Gamma in injection_recovery

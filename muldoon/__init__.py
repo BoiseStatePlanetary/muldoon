@@ -1,7 +1,7 @@
 """A package for sifting meteorological data to look for and analyze vortex
 encounters"""
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 __author__ = 'Brian Jackson <bjackson@boisestate.edu>'
 __all__ = ['met_timeseries', 'utils', 'read_data']
 

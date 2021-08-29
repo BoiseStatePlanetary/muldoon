@@ -475,8 +475,6 @@ class MetTimeseries(object):
         ax1.text(0.05, 0.8, "(a)", fontsize=48, transform=ax1.transAxes)
         ax1.grid(True)
         ax1.tick_params(labelsize=24, labelbottom=False)
-        ax1.set_ylabel(r'$P\,\left({\rm %s}\right)$' % (pressure_units), 
-                fontsize=36)
 
         if(write_filename is not None):
             filename = write_filename + "panel_a.csv"

@@ -23,6 +23,14 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**0.5.3 (2021 Aug 30)**
+
+* Fixed bug in read_data
+
+**0.4.3 (2021 Aug 30)**
+
+* Made helper functions in read_data into externally accessible functions
+
 **0.4.2 (2021 Aug 28)**
 
 * Fixed axis label on make_conditioned_data_plot

@@ -18,11 +18,11 @@ Gamma = 0.01
 right_answer = np.array([baseline, slope, t0, DeltaP, Gamma])
 profile = utils.modified_lorentzian(time, baseline, slope, t0, DeltaP, Gamma) +\
     normal(scale=slope/20., size=len(time))
-mt = met.MetTimeseries(time, profile)
+mt = met.PressureTimeseries(time, profile)
 
 # Detrend
 window_size = Gamma
-detrended_pressure = mt.detrend_pressure_timeseries(window_size)
+detrended_data = mt.detrend_timeseries_boxcar(window_size)
 
 # Calculate filter
 conv = mt.apply_lorentzian_matched_filter(2.*mt.sampling, 1./np.pi)
@@ -30,10 +30,10 @@ conv = mt.apply_lorentzian_matched_filter(2.*mt.sampling, 1./np.pi)
 # Max mis-match between fit and right answers allowed
 num_sigma = 5.
 
-def test_detrend_pressure_timeseries():
+def test_detrend_timeseries_boxcar():
 
     # Make sure detrend is within 
-    assert np.isclose(np.std(mt.detrended_pressure), 0.1, atol=0.1)
+    assert np.isclose(np.std(mt.detrended_data), 0.1, atol=0.1)
 
 def test_apply_lorentzian_matched_filter():
     # Test the matched filter analysis

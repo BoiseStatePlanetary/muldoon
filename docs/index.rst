@@ -23,6 +23,12 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.0.0 (2022 Jan 6)**
+
+* Modified MetTimeseries to move all the functionality specific to pressure
+  time-series to a new class PressureTimeseries - This change clobbers
+  backwards functionality!
+
 **0.5.3 (2021 Aug 30)**
 
 * Fixed bug in read_data

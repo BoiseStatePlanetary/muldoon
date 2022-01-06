@@ -13,37 +13,133 @@ __all__ = ['MetTimeseries']
 
 class MetTimeseries(object):
     """
-    Process and analyze a meteorological time-series to search for vortices
+    A meteorological time-series 
     """
 
-    def __init__(self, time, pressure, windspeed=None, wind_direction=None):
+    def __init__(self, time, data):
         """
         Args:
             time (float, array): time of meteorological time-series
-            pressure (float, array): pressure measurements
-            windspeed (float, array, optional): wind speed measurements
-            wind_direction (float, array, optional): wind velocity aziumth
+            data (float, array): measurements
         """
 
         self.time = time
         # Calculate the sampling rate
         self.sampling = mode(time[1:] - time[0:-1]).mode[0]
 
-        self.pressure = pressure
+        self.data = data
 
-        if(windspeed is not None):
-            self.windspeed = windspeed
-
-        if(wind_direction is not None):
-            self.wind_direction = wind_direction
-
-        # Filtered pressure time-series
-        self.detrended_pressure = None
+        # Filtered time-series
+        self.detrended_data = None
         self.window_width = None
-        self.detrended_pressure_scatter = None
+        self.detrended_data_scatter = None
 
         # Time-series filters
-        self.pressure_trend = None
+        self.data_trend = None
+
+    def detrend_timeseries_boxcar(self, window_width, 
+            deal_with_gaps=True):
+        """
+        Applies boxcar filter to time-series
+
+        Args:
+            window_width (float): width of window in the same units as time
+            deal_with_gaps (bool, optional): whether to check for gaps
+
+        Returns:
+            detrended time-series (float array)
+
+        """
+
+        self.window_width = window_width
+
+        # Queue up to deal with gaps
+        local_time = [self.time]
+        local_data = [self.data]
+
+        if(deal_with_gaps):
+            local_time, local_data = utils.break_at_gaps(self.time,
+                    self.data)
+            
+        # Calculate number of points for window_width
+        window_size = int(window_width/self.sampling)
+        # Check that window_size is odd
+        if(window_size % 2 == 0): 
+            window_size += 1
+
+        self.window_size = window_size
+
+        # Empty out the Nones
+        self.detrended_data = np.array([])
+
+        # Detrend, piece at a time
+        for i in range(len(local_time)):
+
+            local_data_trend = astropy_convolve(local_data[i],
+                    boxcar(window_size), boundary='extend', 
+                    preserve_nan=True)
+
+            if(self.data_trend is None):
+                self.data_trend = local_data_trend
+            else:
+                self.data_trend = np.append(self.data_trend,
+                        local_data_trend)
+
+            self.detrended_data =\
+                    np.append(self.detrended_data, 
+                            local_data[i] - local_data_trend)
+
+        self.detrended_data_scatter = np.nanstd(self.detrended_data)
+
+        return self.detrended_data
+
+    def write_out_detrended_timeseries(self, data_name="data", 
+            filename="out.csv", mode="w", test_mode=False):
+        """
+        Write out formatted text file of detrended time-series
+
+        Args:
+            filename (str, optional): path of file to which to write out data
+            data_name (str, optional): name of data time-series
+            mode (str, optional): write mode; defaults to over-write
+            test_mode (bool, optional): whether to actually write out file
+
+        """
+
+        if(self.detrended_data is None):
+            raise ValueError("Need to detrend data!")
+
+        # Construct write string
+        write_str = "# time, %s\n" % (data_name)
+
+        for i in range(len(self.time) - 1):
+            write_str += "%g, %g\n" %\
+                    (self.time[i], self.detrended_data[i])
+
+        # Don't write a new-line character for the last entry
+        write_str += "%g, %g" % (self.time[-1], self.detrended_data[-1])
+            
+        if(~test_mode):
+            f = open(filename, mode)
+            f.write(write_str)
+            f.close()
+
+        return write_str
+
+class PressureTimeseries(MetTimeseries):
+    """
+    A meteorological time-series tailored to pressure and used for 
+    looking for vortices
+
+    """
+
+    def __init__(self, time, pressure_data):
+        """
+        Args:
+            time (float, array): time of meteorological time-series
+            pressure_data (float, array): pressure measurements
+        """
+        super().__init__(time, pressure_data)
 
         # matched filter parameters
         self.matched_filter_fwhm = None
@@ -68,94 +164,6 @@ class MetTimeseries(object):
         self.popts = None
         self.uncs = None
 
-    def detrend_pressure_timeseries(self, window_width, 
-            deal_with_gaps=True):
-        """
-        Applies boxcar filter to pressure time-series
-
-        Args:
-            window_width (float): width of window in the same units as time
-            deal_with_gaps (bool, optional): whether to check for gaps
-
-        Returns:
-            detrended pressure time-series (float array)
-
-        """
-
-        self.window_width = window_width
-
-        # Queue up to deal with gaps
-        local_time = [self.time]
-        local_pressure = [self.pressure]
-
-        if(deal_with_gaps):
-            local_time, local_pressure = utils.break_at_gaps(self.time,
-                    self.pressure)
-            
-        # Calculate number of points for window_width
-        window_size = int(window_width/self.sampling)
-        # Check that window_size is odd
-        if(window_size % 2 == 0): 
-            window_size += 1
-
-        self.window_size = window_size
-
-        # Empty out the Nones
-        self.detrended_pressure = np.array([])
-
-        # Detrend, piece at a time
-        for i in range(len(local_time)):
-
-            local_pressure_trend = astropy_convolve(local_pressure[i],
-                    boxcar(window_size), boundary='extend', 
-                    preserve_nan=True)
-
-            if(self.pressure_trend is None):
-                self.pressure_trend = local_pressure_trend
-            else:
-                self.pressure_trend = np.append(self.pressure_trend,
-                        local_pressure_trend)
-
-            self.detrended_pressure =\
-                    np.append(self.detrended_pressure, 
-                            local_pressure[i] - local_pressure_trend)
-
-        self.detrended_pressure_scatter = np.nanstd(self.detrended_pressure)
-
-        return self.detrended_pressure
-
-    def write_out_detrended_timeseries(self, filename="out.csv", mode="w",
-            test_mode=False):
-        """
-        Write out formatted text file of detrended time-series
-
-        Args:
-            filename (str, optional): path of file to which to write out data
-            mode (str, optional): write mode; defaults to over-write
-            test_mode (bool, optional): whether to actually write out file
-
-        """
-
-        if(self.detrended_pressure is None):
-            raise ValueError("Need to detrend pressure!")
-
-        # Construct write string
-        write_str = "# time, pressure\n"
-
-        for i in range(len(self.time) - 1):
-            write_str += "%g, %g\n" %\
-                    (self.time[i], self.detrended_pressure[i])
-
-        # Don't write a new-line character for the last entry
-        write_str += "%g, %g" % (self.time[-1], self.detrended_pressure[-1])
-            
-        if(~test_mode):
-            f = open(filename, mode)
-            f.write(write_str)
-            f.close()
-
-        return write_str
-
     def apply_lorentzian_matched_filter(self, lorentzian_fwhm=None,
             lorentzian_depth=1./np.pi, num_fwhms=6.):
         """
@@ -173,8 +181,8 @@ class MetTimeseries(object):
 
         """
 
-        if(self.detrended_pressure_scatter is None):
-            raise ValueError("Run detrend_pressure_timeseries first!")
+        if(self.detrended_data_scatter is None):
+            raise ValueError("Run detrend_timeseries_boxcar first!")
 
         if(lorentzian_fwhm is None):
             lorentzian_fwhm = 2.*self.sampling
@@ -195,8 +203,8 @@ class MetTimeseries(object):
                     "pressure!")
 
         convolution =\
-            np.convolve(self.detrended_pressure/\
-            self.detrended_pressure_scatter, 
+            np.convolve(self.detrended_data/\
+            self.detrended_data_scatter, 
                     lorentzian, mode='same')
 
         # Shift and normalize
@@ -247,8 +255,8 @@ class MetTimeseries(object):
             if(mx_ind - mn_ind > 5):
                 # Use original, unfiltered data
                 self.vortices.append({"time": self.time[mn_ind:mx_ind],
-                    "pressure": self.pressure[mn_ind:mx_ind],
-                    "pressure_scatter": self.detrended_pressure_scatter*\
+                    "pressure": self.data[mn_ind:mx_ind],
+                    "pressure_scatter": self.detrended_data_scatter*\
                             np.ones_like(self.time[mn_ind:mx_ind])})
 
         return self.vortices
@@ -470,7 +478,7 @@ class MetTimeseries(object):
         ax4 = fig.add_subplot(224)
 
         ### Raw data ###
-        ax1.plot(self.time, self.pressure, 
+        ax1.plot(self.time, self.data, 
                 marker='.', ls='', color=BoiseState_blue)
         ax1.text(0.05, 0.8, "(a)", fontsize=48, transform=ax1.transAxes)
         ax1.grid(True)
@@ -478,11 +486,11 @@ class MetTimeseries(object):
 
         if(write_filename is not None):
             filename = write_filename + "panel_a.csv"
-            utils.write_out_plot_data(self.time, self.pressure, 
+            utils.write_out_plot_data(self.time, self.data, 
                     "Time", "Pressure", filename=filename)
 
         ### Filtered data ###
-        ax2.plot(self.time, self.detrended_pressure, 
+        ax2.plot(self.time, self.detrended_data, 
                 marker='.', ls='', color=BoiseState_blue)
         ax2.text(0.05, 0.05, "(b)", fontsize=48, transform=ax2.transAxes)
         ax2.grid(True)
@@ -493,7 +501,7 @@ class MetTimeseries(object):
 
         if(write_filename is not None):
             filename = write_filename + "panel_b.csv"
-            utils.write_out_plot_data(self.time, self.detrended_pressure,
+            utils.write_out_plot_data(self.time, self.detrended_data,
                     "Time", "Detrended_Pressure", filename=filename)
 
 
@@ -548,11 +556,11 @@ class MetTimeseries(object):
 
         if(write_filename is not None):
             filename = write_filename + "panel_d_data.csv"
-            utils.write_out_plot_data(x, ydata, "Time", "DeltaP", 
+            utils.write_out_plot_data(time, ydata, "Time", "DeltaP", 
                     yerr=yerr, filename=filename)
 
             filename = write_filename + "panel_d_model.csv"
-            utils.write_out_plot_data(x, vortex_model, "Time", "DeltaP", 
+            utils.write_out_plot_data(time, model, "Time", "DeltaP", 
                     filename=filename)
 
         return fig, ax1, ax2, ax3, ax4
@@ -591,12 +599,12 @@ class MetTimeseries(object):
                             0., correct_t0, deltaP_grid[i], Gamma_grid[j])
 
                     # Inject into flipped detrended time-series
-                    synthetic_time_series = self.detrended_pressure +\
-                            vortex_signal + self.pressure_trend
+                    synthetic_time_series = self.detrended_data +\
+                            vortex_signal + self.data_trend
 
                     # Make new object
                     new_mt = MetTimeseries(self.time, synthetic_time_series)
-                    new_mt.detrend_pressure_timeseries(self.window_width)
+                    new_mt.detrend_timeseries_boxcar(self.window_width)
 
                     new_mt.apply_lorentzian_matched_filter(
                             self.matched_filter_fwhm, 

@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.0.1 (2022 Jan 6)**
+
+* Fixed bug in requirements.txt
+
 **1.0.0 (2022 Jan 6)**
 
 * Modified MetTimeseries to move all the functionality specific to pressure

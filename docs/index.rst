@@ -23,6 +23,12 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.1.0 (2022 Jan 7)**
+
+* Changed "read_Perseverance_MEDA_data" to "read_Perseverance_PS_data"
+* Added read_Perseverance_ATS_data
+* Added an example ATS data file
+
 **1.0.1 (2022 Jan 6)**
 
 * Fixed bug in requirements.txt

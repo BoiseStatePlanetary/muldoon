@@ -5,9 +5,9 @@ A collections of routines to read in data from various missions
 import numpy as np
 import pandas as pd
 
-def read_Perseverance_MEDA_data(filename, sol=None):
+def read_Perseverance_PS_data(filename, sol=None):
     """
-    Read in Perseverance MEDA data - https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/
+    Read in Perseverance MEDA PS data - https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/
 
     Args:
         filename (str): path to CSV file
@@ -21,6 +21,28 @@ def read_Perseverance_MEDA_data(filename, sol=None):
     pressure = pd.read_csv(filename)['PRESSURE'].values
 
     return time, pressure
+
+def read_Perseverance_ATS_data(filename, which_ATS=1, sol=None):
+    """
+    Read in Perseverance MEDA ATS data - https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/
+
+    Args:
+        filename (str): path to CSV file
+        which_ATS (int): which of the five ATS sensors to read in
+
+    Returns:
+        time, pressure (float array): times and pressures, times in seconds
+        since midnight of sol associated with filename
+
+    """
+
+    time = make_seconds_since_midnight(filename)
+
+    # Which ATS time-series to read in?
+    which_ATS_str = "ATS_LOCAL_TEMP%i" % which_ATS
+    temperature = pd.read_csv(filename)[which_ATS_str].values
+
+    return time, temperature
 
 def make_seconds_since_midnight(filename, sol=None):
     """

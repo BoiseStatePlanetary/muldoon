@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.1.1 (2022 Jan 7)**
+
+* Fixed utils.read_data to incorporate sub-second sampling
+
 **1.1.0 (2022 Jan 7)**
 
 * Changed "read_Perseverance_MEDA_data" to "read_Perseverance_PS_data"

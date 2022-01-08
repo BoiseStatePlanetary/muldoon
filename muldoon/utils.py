@@ -6,7 +6,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 from scipy.stats import mode
 
-def modified_lorentzian(t, baseline, slope, t0, DeltaP, Gamma):
+def modified_lorentzian(t, baseline, slope, t0, Delta, Gamma):
     """
     Pressure profile for a vortex
 
@@ -16,15 +16,15 @@ def modified_lorentzian(t, baseline, slope, t0, DeltaP, Gamma):
         occurs
         slope (float): slope against which excursion occurs
         t0 (float): central time for vortex excursion
-        DeltaP (float): depth of pressure excursion
+        Delta (float): magnitude of excursion
         Gamma (float): full-width/half-max duration of excursion
 
     Returns:
-        Pressure excursion for a vortex (float array)
+        Signal for a vortex (float array)
 
     """
     # Equation 7 from Kahapaa+ (2016)
-    return baseline + slope*(t - t0) - DeltaP/(((t - t0)/(Gamma/2.))**2 + 1)
+    return baseline + slope*(t - t0) - Delta/(((t - t0)/(Gamma/2.))**2 + 1)
 
 def redchisqg(ydata,ymod,deg=2,sd=None):
     """

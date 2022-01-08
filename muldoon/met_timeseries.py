@@ -214,7 +214,8 @@ class PressureTimeseries(MetTimeseries):
 
         return self.convolution
 
-    def find_vortices(self, detection_threshold=5, distance=20, fwhm_factor=6):
+    def find_vortices(self, detection_threshold=5, distance=20, fwhm_factor=6,
+            min_num_points=5):
         """
         Finds distinct peaks in the matched-filter convolution, presumably
         vortex signals
@@ -223,6 +224,7 @@ class PressureTimeseries(MetTimeseries):
             detection_threshold (float, optional): threshold for peak detection
             distance (int, optional): min number of point between peaks
             fwhm_factor (int, optional): when returning vortices, how wide a time window to return
+            min_num_points (int, optional): minimum number of points required
 
         Returns:
             list of times and pressures for each vortex
@@ -252,7 +254,7 @@ class PressureTimeseries(MetTimeseries):
                     fwhm_factor/2*int(self.peak_widths[i]))
 
             # Make sure there are enough points in the vortex
-            if(mx_ind - mn_ind > 5):
+            if(mx_ind - mn_ind > min_num_points):
                 # Use original, unfiltered data
                 self.vortices.append({"time": self.time[mn_ind:mx_ind],
                     "data": self.data[mn_ind:mx_ind],
@@ -639,4 +641,21 @@ class TemperatureTimeseries(MetTimeseries):
         # detected in the contemporaneously collected pressure time-series
         self.vortex_popts = vortex_popts
         self.vortex_uncs = vortex_uncs
+
+    def retrieve_vortices(self, fwhm_factor=6):
+        """
+        Retrieves the times and temperature data corresponding to vortices
+        identified in pressure data
+
+        Args:
+            fwhm_factor (int, optional): when returning vortices, how wide a time window to return
+
+        Returns:
+            list of times and temperatures for each vortex
+
+        """
+    
+        if(self.vortex_popts is None):
+            raise ValueError("self.vortex_popts is None!")
+
 

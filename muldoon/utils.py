@@ -12,7 +12,7 @@ def modified_lorentzian(t, baseline, slope, t0, Delta, Gamma):
 
     Args:
         t (float array): time
-        baseline (float): pressure baseline against which vortex excursion
+        baseline (float): baseline against which vortex excursion
         occurs
         slope (float): slope against which excursion occurs
         t0 (float): central time for vortex excursion
@@ -63,11 +63,12 @@ def redchisqg(ydata,ymod,deg=2,sd=None):
 def fit_vortex(vortex, init_params, bounds, sigma=None, 
         rescale_uncertainties=True):
     """
-    Fits modified Lorentzian to pressure profile
+    Fits modified Lorentzian to pressure/temperature profile
 
     Args:
-        vortex (dict of float arrays): ["time"] - times, ["pressure"] - pressures
-        init_params (float array): initial values including baseline, slope, initial central time, initial delta P, and initial duration
+        vortex (dict of float arrays): ["time"] - times, ["data"] -
+        pressures/temperatures
+        init_params (float array): initial values including baseline, slope, initial central time, initial delta, and initial duration
         bounds (float array): bounds on fit parameters listed in the same order as in init_params
         sigma (float, float array, optional): per-point uncertainties
         rescale_uncertainties (bool, optional): whether to rescale uncertainties on fit parameters by sqrt(reduced chi-squared)

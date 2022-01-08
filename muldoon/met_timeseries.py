@@ -621,3 +621,13 @@ class PressureTimeseries(MetTimeseries):
 
         # Convert Gamma back to seconds
         return deltaP_grid, Gamma_grid*3600., detection_statistics
+
+class TemperatureTimeseries(MetTimeseries):
+    def __init__(self, time, temperature_data):
+        """
+        Args:
+            time (float, array): time of meteorological time-series
+            temperature_data (float, array): temperature measurements
+        """
+        super().__init__(time, temperature_data)
+

@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.2.0 (2022 Jan 8)**
+
+* Added the beginnings of a TemperatureTimeseries class to met_timeseries
+
 **1.1.1 (2022 Jan 7)**
 
 * Fixed utils.read_data to incorporate sub-second sampling

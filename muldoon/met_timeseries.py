@@ -626,36 +626,54 @@ class PressureTimeseries(MetTimeseries):
 
 class TemperatureTimeseries(MetTimeseries):
     def __init__(self, time, temperature_data, 
-            vortex_popts=None, vortex_uncs=None):
+            pressure_vortex_popts=None, pressure_vortex_uncs=None):
         """
         Args:
             time (float, array): time of meteorological time-series
             temperature_data (float, array): temperature measurements
-            vortex_params/uncs (list of float arrays): the best-fit t0, 
-            Delta P, and FWHM values and uncertainties for a set of vortices
+            pressure_vortex_params/uncs (list of float arrays): the best-fit 
+            t0, Delta P, and FWHM values and uncertainties for a set of vortices
             detected in the pressure time-series collected contemporaneously
         """
         super().__init__(time, temperature_data)
 
         # The best-fit t0, Delta P, and FWHM values for associated vortices
         # detected in the contemporaneously collected pressure time-series
-        self.vortex_popts = vortex_popts
-        self.vortex_uncs = vortex_uncs
+        self.pressure_vortex_popts = pressure_vortex_popts
+        self.pressure_vortex_uncs = pressure_vortex_uncs
 
-    def retrieve_vortices(self, fwhm_factor=6):
+        # The temperature vortex signals
+        self.vortices = None
+
+    def retrieve_vortices(self, fwhm_factor=6, min_num_points=5):
         """
         Retrieves the times and temperature data corresponding to vortices
         identified in pressure data
 
         Args:
             fwhm_factor (int, optional): when returning vortices, how wide a time window to return
+            min_num_points (int, optional): minimum number of points
 
         Returns:
             list of times and temperatures for each vortex
 
         """
     
-        if(self.vortex_popts is None):
-            raise ValueError("self.vortex_popts is None!")
+        if(self.pressure_vortex_popts is None):
+            raise ValueError("self.pressure_vortex_popts is None!")
 
+        self.vortices = []
 
+        for i in range(len(self.pressure_vortex_popts)):
+
+            # Grab all the points within the vortex signal
+            ind = np.abs(self.time - self.pressure_vortex_popts[i][2]) <\
+                    fwhm_factor*self.pressure_vortex_popts[i][4]/2.
+
+            if(len(self.time[ind]) > min_num_points):
+                # Use original, unfiltered data.
+                #
+                # Because the temperature data show so much more red noise
+                # than the pressure data, we do NOT include scatter here.
+                self.vortices.append({"time": self.time[ind],
+                    "data": self.data[ind]})

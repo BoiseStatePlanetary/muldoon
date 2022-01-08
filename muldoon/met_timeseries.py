@@ -255,8 +255,8 @@ class PressureTimeseries(MetTimeseries):
             if(mx_ind - mn_ind > 5):
                 # Use original, unfiltered data
                 self.vortices.append({"time": self.time[mn_ind:mx_ind],
-                    "pressure": self.data[mn_ind:mx_ind],
-                    "pressure_scatter": self.detrended_data_scatter*\
+                    "data": self.data[mn_ind:mx_ind],
+                    "scatter": self.detrended_data_scatter*\
                             np.ones_like(self.time[mn_ind:mx_ind])})
 
         return self.vortices
@@ -297,7 +297,7 @@ class PressureTimeseries(MetTimeseries):
 
             try:
                 popt, unc = utils.fit_vortex(self.vortices[i], init_params, 
-                        bounds, sigma=self.vortices[i]["pressure_scatter"])
+                        bounds, sigma=self.vortices[i]["scatter"])
 
                 self.popts.append(popt)
                 self.uncs.append(unc)
@@ -311,8 +311,8 @@ class PressureTimeseries(MetTimeseries):
 
                     # Remember! Times are in hours!
                     time = self.vortices[i]["time"]
-                    ydata = self.vortices[i]["pressure"] - popt[0]
-                    yerr = self.vortices[i]["pressure_scatter"]
+                    ydata = self.vortices[i]["data"] - popt[0]
+                    yerr = self.vortices[i]["scatter"]
                     model_func = lambda time, popt:\
                             utils.modified_lorentzian(time, *popt) - popt[0]
                     model = utils.plot_vortex(time, 
@@ -357,7 +357,7 @@ class PressureTimeseries(MetTimeseries):
 
         Args:
             vortex (dict of float arrays): vortex["time"] - time, 
-            vortex["pressure"] - pressure
+            vortex["data"] - pressure
             init_* (float): initial parameters
 
         Returns:
@@ -366,7 +366,7 @@ class PressureTimeseries(MetTimeseries):
         """
 
         x = vortex["time"]
-        y = vortex["pressure"]
+        y = vortex["data"]
 
         # Initial fit to background trend
         fit_params = np.polyfit(x, y, 1)
@@ -397,7 +397,7 @@ class PressureTimeseries(MetTimeseries):
 
         Args:
             vortex (dict of float arrays): vortex["time"] - time,
-            vortex["pressure"] - pressure
+            vortex["data"] - pressure
             init_params (float array): initial parameters in following order:
                 init_baseline, init_slope, init_t0, init_DeltaP, init_Gamma
             slope_fac (float): maximum factor for slope upper bound
@@ -409,7 +409,7 @@ class PressureTimeseries(MetTimeseries):
         """
 
         x = vortex["time"]
-        y = vortex["pressure"]
+        y = vortex["data"]
 
        # Initial fit to background trend
         fit_params = np.polyfit(x, y, 1)
@@ -537,9 +537,9 @@ class PressureTimeseries(MetTimeseries):
 
         # Remember! Times are in hours!
         time = self.vortices[which_vortex]["time"]
-        ydata = self.vortices[which_vortex]["pressure"] -\
+        ydata = self.vortices[which_vortex]["data"] -\
                 self.popts[which_vortex][0]
-        yerr = self.vortices[which_vortex]["pressure_scatter"]
+        yerr = self.vortices[which_vortex]["scatter"]
         model = utils.plot_vortex(time, self.popts[which_vortex][2], ydata, 
                 model_func, self.popts[which_vortex], ax4, yerr=yerr)
 

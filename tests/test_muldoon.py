@@ -60,7 +60,7 @@ def test_fit_vortex():
     old_popt, old_unc = utils.fit_vortex(vortices[0], [0., 1., 0., 1., 0.01], 
                           [[-1, -1, np.min(vortices[0]["time"]), 0, 0],
                            [1, 1, np.max(vortices[0]["time"]), 2, 1]],
-                          sigma=vortices[0]["pressure_scatter"])
+                          sigma=vortices[0]["scatter"])
 
     # Make sure best-fit parameters all match the right answers 
     assert(np.max(np.abs(old_popt - right_answer)/old_unc) < num_sigma)

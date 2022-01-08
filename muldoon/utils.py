@@ -78,7 +78,7 @@ def fit_vortex(vortex, init_params, bounds, sigma=None,
     """
 
     x = vortex["time"]
-    y = vortex["pressure"]
+    y = vortex["data"]
 
     if(sigma is not None):
         popt, pcov = curve_fit(modified_lorentzian, x, y, p0=init_params,

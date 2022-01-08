@@ -623,11 +623,20 @@ class PressureTimeseries(MetTimeseries):
         return deltaP_grid, Gamma_grid*3600., detection_statistics
 
 class TemperatureTimeseries(MetTimeseries):
-    def __init__(self, time, temperature_data):
+    def __init__(self, time, temperature_data, 
+            vortex_popts=None, vortex_uncs=None):
         """
         Args:
             time (float, array): time of meteorological time-series
             temperature_data (float, array): temperature measurements
+            vortex_params/uncs (list of float arrays): the best-fit t0, 
+            Delta P, and FWHM values and uncertainties for a set of vortices
+            detected in the pressure time-series collected contemporaneously
         """
         super().__init__(time, temperature_data)
+
+        # The best-fit t0, Delta P, and FWHM values for associated vortices
+        # detected in the contemporaneously collected pressure time-series
+        self.vortex_popts = vortex_popts
+        self.vortex_uncs = vortex_uncs
 

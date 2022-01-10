@@ -36,7 +36,9 @@ def read_Perseverance_ATS_data(filename, which_ATS=1, sol=None):
 
     """
 
-    time = make_seconds_since_midnight(filename, subsecond_sampling=True)
+    # As of 2022 Jan 10, ATS samples once every half second (2 Hz).
+    time = make_seconds_since_midnight(filename, 
+            subsecond_sampling=1./2/3600.)
 
     # Which ATS time-series to read in?
     which_ATS_str = "ATS_LOCAL_TEMP%i" % which_ATS
@@ -44,7 +46,7 @@ def read_Perseverance_ATS_data(filename, which_ATS=1, sol=None):
 
     return time, temperature
 
-def make_seconds_since_midnight(filename, sol=None, subsecond_sampling=False):
+def make_seconds_since_midnight(filename, sol=None, subsecond_sampling=None):
     """
     The MEDA data provide times in the LTST field in the format "sol hour:minute:second".
 
@@ -80,16 +82,12 @@ def make_seconds_since_midnight(filename, sol=None, subsecond_sampling=False):
 
     # If the time-series involves sub-second sampling, the LTST column does not
     # reflect the right time.
-    if(subsecond_sampling):
-        # Use the SCLK column instead
-        SCLK = data['SCLK'].values
-        SCLK = (SCLK - SCLK[0])/3600.
-
+    if(subsecond_sampling is not None):
         for i in range(1, len(time)):
-            # For duplicate entries advance the second entry by the difference
-            # in SCLK
+            # For duplicate entries advance the second entry by the sampling
+            # period
             if(time[i] == time[i-1]):
-                time[i] += SCLK[i] - SCLK[i-1]
+                time[i] += subsecond_sampling
 
     return time
 

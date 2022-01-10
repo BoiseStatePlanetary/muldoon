@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.2.1 (2022 Jan 10)**
+
+* Fixed bug in make_seconds_since_midnight
+
 **1.2.0 (2022 Jan 8)**
 
 * Added the beginnings of a TemperatureTimeseries class to met_timeseries

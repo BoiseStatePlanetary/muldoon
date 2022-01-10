@@ -82,9 +82,14 @@ def make_seconds_since_midnight(filename, sol=None, subsecond_sampling=False):
     # reflect the right time.
     if(subsecond_sampling):
         # Use the SCLK column instead
-        t0 = time[0]
         SCLK = data['SCLK'].values
-        time = t0 + (SCLK - SCLK[0])/3600.
+        SCLK = (SCLK - SCLK[0])/3600.
+
+        for i in range(1, len(time)):
+            # For duplicate entries advance the second entry by the difference
+            # in SCLK
+            if(time[i] == time[i-1]):
+                time[i] += SCLK[i] - SCLK[i-1]
 
     return time
 

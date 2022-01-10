@@ -7,6 +7,7 @@ import numpy as np
 from numpy.random import normal
 from muldoon import met_timeseries as met
 from muldoon import utils 
+from muldoon.read_data import *
 
 # Create time-series
 time = np.linspace(-1, 1, 1000)
@@ -92,6 +93,16 @@ def test_fit_all_vortices():
 
     # Make sure best-fit parameters all match the right answers
     assert(np.max(np.abs(popts[0] - right_answer)/uncs[0]) < num_sigma)
+
+def test_make_seconds_since_midnight():
+    # Test that the sub-second sampling scheme works
+
+    filename="WE__0089___________CAL_ATS_________________P01.CSV"
+    time = make_seconds_since_midnight(filename, subsecond_sampling=True)
+    delta_time = time[1:] - time[:-1]
+
+    # No overlapping times, right?
+    assert(len(delta_time[delta_time == 0]) == 0)
 
 def test_retrieve_vortices():
     tt.retrieve_vortices()

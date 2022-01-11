@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.2.2 (2022 Jan 10)**
+
+* Added the ability to read LMST times as well as LTST times to read_data 
+
 **1.2.1 (2022 Jan 10)**
 
 * Fixed bug in make_seconds_since_midnight

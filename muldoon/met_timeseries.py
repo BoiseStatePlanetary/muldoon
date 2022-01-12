@@ -126,6 +126,94 @@ class MetTimeseries(object):
 
         return write_str
 
+    def _determine_init_params(self, vortex,
+            init_baseline=None, init_slope=None, init_t0=None,
+            init_Delta=None, init_Gamma=None):
+        """
+        Estimate reasonable initial parameters for fitting a vortex pressure
+        signal
+
+        Args:
+            vortex (dict of float arrays): vortex["time"] - time,
+            vortex["data"] - pressure
+            init_* (float): initial parameters
+
+        Returns:
+            float array of initial parameter values
+
+        """
+
+        x = vortex["time"]
+        y = vortex["data"]
+
+        # Initial fit to background trend
+        fit_params = np.polyfit(x, y, 1)
+        detrended_y = y - np.polyval(fit_params, x)
+
+        if(init_baseline is None):
+            init_baseline = np.median(y)
+
+        if(init_slope is None):
+            init_slope = (y[-1] - y[0])/(x[-1] - x[0])
+
+        if(init_t0 is None):
+            init_t0 = x[np.argmin(detrended_y)]
+
+        if(init_Delta is None):
+            init_Delta = np.max(detrended_y) - np.min(detrended_y)
+
+        if(init_Gamma is None):
+            init_Gamma = 5.*self.sampling
+
+        return np.array([init_baseline, init_slope, init_t0, init_Delta,
+            init_Gamma])
+
+    def _determine_bounds(self, vortex, init_params,
+            slope_fac=10., Gamma_fac=10.):
+        """
+        Estimate reasonable bounds on fit parameters
+
+        Args:
+            vortex (dict of float arrays): vortex["time"] - time,
+            vortex["data"] - data
+            init_params (float array): initial parameters in following order:
+                init_baseline, init_slope, init_t0, init_Delta, init_Gamma
+            slope_fac (float): maximum factor for slope upper bound
+            Gamma_fac (float): maximum factor for Gamma upper bound
+
+        Returns:
+            float array with lower and upper bounds on fit parameters
+
+        """
+
+        x = vortex["time"]
+        y = vortex["data"]
+
+       # Initial fit to background trend
+        fit_params = np.polyfit(x, y, 1)
+        detrended_y = y - np.polyval(fit_params, x)
+
+        # Baseline probably doesn't exceed minimum or maximum y
+        mn_baseline = np.min(y)
+        mx_baseline = np.max(y)
+
+        # Slope unlikely to exceed overall slope
+        overall_slope = (y[-1] - y[0])/(x[-1] - x[0])
+        mn_slope = -slope_fac*np.abs(overall_slope)
+        mx_slope = slope_fac*np.abs(overall_slope)
+
+        mn_t0 = np.min(x)
+        mx_t0 = np.max(x)
+
+        mx_delta = np.abs(np.max(detrended_y) - np.min(detrended_y))
+        mn_delta = -mx_delta
+
+        mn_Gamma = 2.*self.sampling # Nyquist sampling
+        mx_Gamma = np.max([Gamma_fac*init_params[4], x[-1] - x[0]])
+
+        return ([mn_baseline, mn_slope, mn_t0, mn_delta, mn_Gamma],
+                [mx_baseline, mx_slope, mx_t0, mx_delta, mx_Gamma])
+
 class PressureTimeseries(MetTimeseries):
     """
     A meteorological time-series tailored to pressure and used for 
@@ -350,95 +438,6 @@ class PressureTimeseries(MetTimeseries):
             ax = None
         return self.popts, self.uncs
 
-    def _determine_init_params(self, vortex, 
-            init_baseline=None, init_slope=None, init_t0=None, 
-            init_DeltaP=None, init_Gamma=None):
-        """
-        Estimate reasonable initial parameters for fitting a vortex pressure
-        signal
-
-        Args:
-            vortex (dict of float arrays): vortex["time"] - time, 
-            vortex["data"] - pressure
-            init_* (float): initial parameters
-
-        Returns:
-            float array of initial parameter values
-
-        """
-
-        x = vortex["time"]
-        y = vortex["data"]
-
-        # Initial fit to background trend
-        fit_params = np.polyfit(x, y, 1)
-        detrended_y = y - np.polyval(fit_params, x)
-
-        if(init_baseline is None):
-            init_baseline = np.median(y)
-
-        if(init_slope is None):
-            init_slope = (y[-1] - y[0])/(x[-1] - x[0])
-
-        if(init_t0 is None):
-            init_t0 = x[np.argmin(detrended_y)]
-
-        if(init_DeltaP is None):
-            init_DeltaP = np.max(detrended_y) - np.min(detrended_y) 
-
-        if(init_Gamma is None):
-            init_Gamma = 5.*self.sampling
-
-        return np.array([init_baseline, init_slope, init_t0, init_DeltaP, 
-            init_Gamma])
-
-    def _determine_bounds(self, vortex, init_params,
-            slope_fac=10., Gamma_fac=10.):
-        """
-        Estimate reasonable bounds on fit parameters
-
-        Args:
-            vortex (dict of float arrays): vortex["time"] - time,
-            vortex["data"] - pressure
-            init_params (float array): initial parameters in following order:
-                init_baseline, init_slope, init_t0, init_DeltaP, init_Gamma
-            slope_fac (float): maximum factor for slope upper bound
-            Gamma_fac (float): maximum factor for Gamma upper bound
-    
-        Returns:
-            float array with lower and upper bounds on fit parameters
-
-        """
-
-        x = vortex["time"]
-        y = vortex["data"]
-
-       # Initial fit to background trend
-        fit_params = np.polyfit(x, y, 1)
-        detrended_y = y - np.polyval(fit_params, x)
-
-        # Baseline probably doesn't exceed minimum or maximum y
-        mn_baseline = np.min(y)
-        mx_baseline = np.max(y)
-
-        # Slope unlikely to exceed overall slope
-        overall_slope = (y[-1] - y[0])/(x[-1] - x[0])
-        mn_slope = -slope_fac*np.abs(overall_slope)
-        mx_slope = slope_fac*np.abs(overall_slope)
-
-        mn_t0 = np.min(x)
-        mx_t0 = np.max(x)
-
-        # Can't have negative delta P's
-        mn_deltaP = 0.
-        mx_deltaP = np.max(detrended_y) - np.min(detrended_y)
-
-        mn_Gamma = 2.*self.sampling # Nyquist sampling
-        mx_Gamma = np.max([Gamma_fac*init_params[4], x[-1] - x[0]])
-
-        return ([mn_baseline, mn_slope, mn_t0, mn_deltaP, mn_Gamma],
-                [mx_baseline, mx_slope, mx_t0, mx_deltaP, mx_Gamma])
-
     def make_conditioned_data_figure(self, which_vortex=0, 
             fig=None, figsize=(10, 10), aspect_ratio=16./9,
             pressure_units="Pa", time_units="Hours", vortex_time_units="s",
@@ -645,7 +644,8 @@ class TemperatureTimeseries(MetTimeseries):
         # The temperature vortex signals
         self.vortices = None
 
-    def retrieve_vortices(self, fwhm_factor=6, min_num_points=5):
+    def retrieve_vortices(self, fwhm_factor=6, min_num_points=5, 
+            include_scatter=True):
         """
         Retrieves the times and temperature data corresponding to vortices
         identified in pressure data
@@ -653,6 +653,8 @@ class TemperatureTimeseries(MetTimeseries):
         Args:
             fwhm_factor (int, optional): when returning vortices, how wide a time window to return
             min_num_points (int, optional): minimum number of points
+            include_scatter (bool, optional): whether or not to include a 
+            calculated scatter
 
         Returns:
             list of times and temperatures for each vortex
@@ -672,8 +674,12 @@ class TemperatureTimeseries(MetTimeseries):
 
             if(len(self.time[ind]) > min_num_points):
                 # Use original, unfiltered data.
-                #
-                # Because the temperature data show so much more red noise
-                # than the pressure data, we do NOT include scatter here.
-                self.vortices.append({"time": self.time[ind],
-                    "data": self.data[ind]})
+                if(include_scatter):
+                    self.vortices.append({"time": self.time[ind],
+                        "data": self.data[ind], 
+                        "scatter": mad(self.data[ind])*\
+                                np.ones_like(self.data[ind])})
+                else:
+                    self.vortices.append({"time": self.time[ind],
+                        "data": self.data[ind]})
+

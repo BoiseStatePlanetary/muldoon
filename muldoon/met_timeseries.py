@@ -722,8 +722,8 @@ class TemperatureTimeseries(MetTimeseries):
         return np.array([init_baseline, init_slope, init_t0, init_Delta, 
             init_Gamma])
 
-    def _determine_bounds(self, vortex, init_params,
-            slope_fac=10., Gamma_fac=3.):
+    def _determine_bounds(self, vortex, init_params, init_unc,
+            slope_fac=10., Gamma_fac=1.):
         """
         Estimate reasonable bounds on fit parameters
 
@@ -757,15 +757,15 @@ class TemperatureTimeseries(MetTimeseries):
         mx_slope = slope_fac*np.abs(overall_slope)
 
         # t0 between the t0 +- 0.5*Gamma_fac*Gamma from the pressure vortex
-        mn_t0 = init_params[2] - 0.5*Gamma_fac*init_params[4]
-        mx_t0 = init_params[2] + 0.5*Gamma_fac*init_params[4]
+        mn_t0 = init_params[2] - 0.5*Gamma_fac*init_unc[4]
+        mx_t0 = init_params[2] + 0.5*Gamma_fac*init_unc[4]
                 
         # Can't have positive delta Ts - because I've defined profile as < 0
         mn_delta = -np.abs(np.max(detrended_y) - np.min(detrended_y))
-        mx_delta = 0.
+        mx_delta = np.abs(np.max(detrended_y) - np.min(detrended_y))
 
         mn_Gamma = 2.*self.sampling # Nyquist sampling
-        mx_Gamma = Gamma_fac*init_params[4]
+        mx_Gamma = Gamma_fac*(init_params[4] + init_unc[4])
 
         return ([mn_baseline, mn_slope, mn_t0, mn_delta, mn_Gamma],
                 [mx_baseline, mx_slope, mx_t0, mx_delta, mx_Gamma])

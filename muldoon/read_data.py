@@ -22,14 +22,15 @@ def read_Perseverance_PS_data(filename, sol=None, time_field='LTST'):
 
     return time, pressure
 
-def read_Perseverance_ATS_data(filename, which_ATS=1, time_field='LTST', 
+def read_Perseverance_ATS_data(filename, which_ATS=1, time_field='LTST',
         sol=None):
     """
     Read in Perseverance MEDA ATS data - https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/
 
     Args:
         filename (str): path to CSV file
-        which_ATS (int): which of the five ATS sensors to read in
+        which_ATS (int or str): which of the five ATS sensors to read in;
+        if "all", all of the ATS time series are returned
         time_field (str, optional): which time base to use
 
     Returns:
@@ -42,10 +43,20 @@ def read_Perseverance_ATS_data(filename, which_ATS=1, time_field='LTST',
     time = make_seconds_since_midnight(filename, time_field=time_field)
 
     # Which ATS time-series to read in?
-    which_ATS_str = "ATS_LOCAL_TEMP%i" % which_ATS
-    temperature = pd.read_csv(filename)[which_ATS_str].values
+    if(isinstance(which_ATS, int)):
+        which_ATS_str = "ATS_LOCAL_TEMP%i" % which_ATS
+        temperature = pd.read_csv(filename)[which_ATS_str].values
 
-    return time, temperature
+        return time, temperature
+
+    elif(isinstance(which_ATS, str) and (which_ATS == "all")):
+        ATS1 = pd.read_csv(filename)["ATS_LOCAL_TEMP1"].values
+        ATS2 = pd.read_csv(filename)["ATS_LOCAL_TEMP2"].values
+        ATS3 = pd.read_csv(filename)["ATS_LOCAL_TEMP3"].values
+        ATS4 = pd.read_csv(filename)["ATS_LOCAL_TEMP4"].values
+        ATS5 = pd.read_csv(filename)["ATS_LOCAL_TEMP5"].values
+
+        return time, [ATS1, ATS2, ATS3, ATS4, ATS5]
 
 def make_seconds_since_midnight(filename, time_field='LTST', sol=None):
     """

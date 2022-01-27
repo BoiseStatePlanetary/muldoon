@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.3.0 (2022 Jan 26)**
+
+*  Allow read_Perseverance_ATS_data to return all ATS time series
+
 **1.2.2 (2022 Jan 10)**
 
 * Added the ability to read LMST times as well as LTST times to read_data 

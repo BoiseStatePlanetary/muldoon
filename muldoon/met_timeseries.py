@@ -769,3 +769,8 @@ class TemperatureTimeseries(MetTimeseries):
 
         return ([mn_baseline, mn_slope, mn_t0, mn_delta, mn_Gamma],
                 [mx_baseline, mx_slope, mx_t0, mx_delta, mx_Gamma])
+
+class WindTimeseries(MetTimeseries):
+    def sample(a,b):
+        c = a*b
+        return c

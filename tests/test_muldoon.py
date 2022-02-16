@@ -26,8 +26,8 @@ DeltaT = -10. #K
 temp_profile = utils.modified_lorentzian(time, baseline, slope, t0, DeltaT,
         Gamma) + normal(scale=slope/20., size=len(time))
 tt = met.TemperatureTimeseries(time, temp_profile, 
-        pressure_vortex_popts = [right_answer],
-        pressure_vortex_uncs = [np.array([0, 0, 0, 0, 0])])
+        popts = [right_answer],
+        uncs = [np.array([0, 0, 0, 0, 0])])
 
 # Detrend
 window_size = Gamma
@@ -99,3 +99,9 @@ def test_retrieve_vortices():
 
     # Make sure it retrieves the right number of data points
     assert(len(tt.vortices[0]["time"]) == 30)
+
+    # And test retrieve_vortices for pressure time series
+    new_mt = met.PressureTimeseries(time, profile, 
+           popts=[right_answer], uncs=[np.array([0, 0, 0, 0, 0])])
+    new_mt.retrieve_vortices()
+    assert(len(new_mt.vortices[0]["time"]) == 30)

@@ -23,6 +23,19 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.3.3 (2022 Feb 16)**
+
+*  Moved popts and uncs keywords to super class
+*  Moved retrieve_vortices to super class
+
+**1.3.2 (2022 Feb 16)**
+
+*  Fixed bug - popts/uncs were added in the wrong place
+
+**1.3.1 (2022 Feb 16)**
+
+*  Added popts/uncs to PressureTimeseries as optional keywords
+
 **1.3.0 (2022 Jan 26)**
 
 *  Allow read_Perseverance_ATS_data to return all ATS time series

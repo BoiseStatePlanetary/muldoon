@@ -16,7 +16,7 @@ class MetTimeseries(object):
     A meteorological time-series 
     """
 
-    def __init__(self, time, data):
+    def __init__(self, time, data, popts=None, uncs=None):
         """
         Args:
             time (float, array): time of meteorological time-series
@@ -36,6 +36,10 @@ class MetTimeseries(object):
 
         # Time-series filters
         self.data_trend = None
+
+        # vortex parameters
+        self.popts = popts
+        self.uncs = uncs
 
     def detrend_timeseries_boxcar(self, window_width, 
             deal_with_gaps=True):
@@ -126,6 +130,49 @@ class MetTimeseries(object):
 
         return write_str
 
+    def retrieve_vortices(self, fwhm_factor=6, min_num_points=5,
+            include_scatter=True):
+        """
+        Retrieves the times and data corresponding to vortices
+        identified in popts
+
+        Args:
+            fwhm_factor (int, optional): when returning vortices, how wide a time window to return
+            min_num_points (int, optional): minimum number of points
+            include_scatter (bool, optional): whether or not to include a
+            calculated scatter
+
+        Returns:
+            list of times and temperatures for each vortex
+
+        """
+
+        if(self.popts is None):
+            raise ValueError("self.pressure_vortex_popts is None!")
+
+        self.vortices = []
+
+        for i in range(len(self.popts)):
+
+            # Grab all the points within the vortex signal
+            ind = np.abs(self.time - self.popts[i][2]) <\
+                    fwhm_factor*self.popts[i][4]/2.
+
+            if(len(self.time[ind]) > min_num_points):
+                # Use original, unfiltered data.
+                #
+                # Use the point-to-point scatter to estimate uncertainty.
+                if(include_scatter):
+                    self.vortices.append({"time": self.time[ind],
+                        "data": self.data[ind],
+                        "scatter": mad(self.data[ind][1:] -\
+                                self.data[ind][:-1])*\
+                                np.ones_like(self.data[ind])})
+                else:
+                    self.vortices.append({"time": self.time[ind],
+                        "data": self.data[ind]})
+
+
 class PressureTimeseries(MetTimeseries):
     """
     A meteorological time-series tailored to pressure and used for 
@@ -133,13 +180,18 @@ class PressureTimeseries(MetTimeseries):
 
     """
 
-    def __init__(self, time, pressure_data):
+    def __init__(self, time, pressure_data,
+            popts=None, uncs=None):
         """
         Args:
             time (float, array): time of meteorological time-series
             pressure_data (float, array): pressure measurements
+            popts/uncs (list of float arrays): the best-fit baseline, slope,
+            t0, Delta P, and FWHM values and uncertainties for a set of vortices
+            detected in the pressure time-series collected contemporaneously
         """
-        super().__init__(time, pressure_data)
+        super().__init__(time, pressure_data, 
+                popts=popts, uncs=uncs)
 
         # matched filter parameters
         self.matched_filter_fwhm = None
@@ -159,10 +211,6 @@ class PressureTimeseries(MetTimeseries):
 
         # Collection of time-series for individual vortices
         self.vortices = None
-
-        # Vortex fit parameters and uncertainties
-        self.popts = None
-        self.uncs = None
 
     def apply_lorentzian_matched_filter(self, lorentzian_fwhm=None,
             lorentzian_depth=1./np.pi, num_fwhms=6.):
@@ -626,7 +674,7 @@ class PressureTimeseries(MetTimeseries):
 
 class TemperatureTimeseries(MetTimeseries):
     def __init__(self, time, temperature_data, 
-            pressure_vortex_popts=None, pressure_vortex_uncs=None):
+            popts=None, uncs=None):
         """
         Args:
             time (float, array): time of meteorological time-series
@@ -635,57 +683,11 @@ class TemperatureTimeseries(MetTimeseries):
             t0, Delta P, and FWHM values and uncertainties for a set of vortices
             detected in the pressure time-series collected contemporaneously
         """
-        super().__init__(time, temperature_data)
-
-        # The best-fit t0, Delta P, and FWHM values for associated vortices
-        # detected in the contemporaneously collected pressure time-series
-        self.pressure_vortex_popts = pressure_vortex_popts
-        self.pressure_vortex_uncs = pressure_vortex_uncs
+        super().__init__(time, temperature_data, 
+                popts=popts, uncs=uncs)
 
         # The temperature vortex signals
         self.vortices = None
-
-    def retrieve_vortices(self, fwhm_factor=6, min_num_points=5, 
-            include_scatter=True):
-        """
-        Retrieves the times and temperature data corresponding to vortices
-        identified in pressure data
-
-        Args:
-            fwhm_factor (int, optional): when returning vortices, how wide a time window to return
-            min_num_points (int, optional): minimum number of points
-            include_scatter (bool, optional): whether or not to include a 
-            calculated scatter
-
-        Returns:
-            list of times and temperatures for each vortex
-
-        """
-    
-        if(self.pressure_vortex_popts is None):
-            raise ValueError("self.pressure_vortex_popts is None!")
-
-        self.vortices = []
-
-        for i in range(len(self.pressure_vortex_popts)):
-
-            # Grab all the points within the vortex signal
-            ind = np.abs(self.time - self.pressure_vortex_popts[i][2]) <\
-                    fwhm_factor*self.pressure_vortex_popts[i][4]/2.
-
-            if(len(self.time[ind]) > min_num_points):
-                # Use original, unfiltered data.
-                #
-                # Use the point-to-point scatter to estimate uncertainty.
-                if(include_scatter):
-                    self.vortices.append({"time": self.time[ind],
-                        "data": self.data[ind], 
-                        "scatter": mad(self.data[ind][1:] -\
-                                self.data[ind][:-1])*\
-                                np.ones_like(self.data[ind])})
-                else:
-                    self.vortices.append({"time": self.time[ind],
-                        "data": self.data[ind]})
 
     def _determine_init_params(self, vortex, init_t0, init_Gamma,
             init_baseline=None, init_slope=None, init_Delta=None):

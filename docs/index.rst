@@ -23,6 +23,14 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.3.5 (2022 Feb 24)**
+
+*  Fixed bug - pressure_timeseries_injection_recovery used wrong object
+
+**1.3.4 (2022 Feb 24)**
+
+*  Fixed bug - detrend kept adding data_trend over and over again
+
 **1.3.3 (2022 Feb 16)**
 
 *  Moved popts and uncs keywords to super class

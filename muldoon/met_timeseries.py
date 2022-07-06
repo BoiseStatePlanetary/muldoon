@@ -7,6 +7,7 @@ from scipy.stats import mode
 from statsmodels.robust import mad
 
 import muldoon.utils as utils
+from emcee import *
 
 __all__ = ['MetTimeseries']
 
@@ -83,7 +84,7 @@ class MetTimeseries(object):
                     boxcar(window_size), boundary='extend', 
                     preserve_nan=True)
 
-            if(self.data_trend is None):
+            if(i == 0):
                 self.data_trend = local_data_trend
             else:
                 self.data_trend = np.append(self.data_trend,
@@ -653,7 +654,8 @@ class PressureTimeseries(MetTimeseries):
                             vortex_signal + self.data_trend
 
                     # Make new object
-                    new_mt = MetTimeseries(self.time, synthetic_time_series)
+                    new_mt = PressureTimeseries(self.time, 
+                            synthetic_time_series)
                     new_mt.detrend_timeseries_boxcar(self.window_width)
 
                     new_mt.apply_lorentzian_matched_filter(

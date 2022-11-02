@@ -691,7 +691,7 @@ class TemperatureTimeseries(MetTimeseries):
         # The temperature vortex signals
         self.vortices = None
 
-    def _determine_init_params(self, vortex, init_t0, init_Gamma,
+    def _determine_init_params(self, vortex, init_t0=None, init_Gamma=None,
             init_baseline=None, init_slope=None, init_Delta=None):
         """
         Estimate reasonable initial parameters for fitting a vortex pressure
@@ -722,6 +722,12 @@ class TemperatureTimeseries(MetTimeseries):
 
         if(init_Delta is None):
             init_Delta = -np.abs(np.max(detrended_y) - np.min(detrended_y))
+
+        if(init_t0 is None):
+            init_t0 = x[np.argmax(detrended_y)]
+
+        if(init_Gamma is None):
+            init_Gamma = 5.*self.sampling
 
         return np.array([init_baseline, init_slope, init_t0, init_Delta, 
             init_Gamma])

@@ -23,6 +23,11 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.3.6 (2022 Nov 2)**
+
+*  Fixed small inconsistency - _determine_init_params for TemperatureTimeSeries
+  treated init_Gamma and init_t0 differently than PressureTS did
+
 **1.3.5 (2022 Feb 24)**
 
 *  Fixed bug - pressure_timeseries_injection_recovery used wrong object

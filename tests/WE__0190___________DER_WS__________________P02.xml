@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.sch" schematypens="http://purl.oclc.org/dsdl/schematron" ?>
+<?xml-model href="https://pds.nasa.gov/pds4/mission/mars2020/v1/PDS4_MARS2020_1G00_1000.sch"
+    schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<Product_Observational xmlns="http://pds.nasa.gov/pds4/pds/v1" xmlns:pds="http://pds.nasa.gov/pds4/pds/v1" xmlns:mars2020="http://pds.nasa.gov/pds4/mission/mars2020/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1                                            https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.xsd                                            http://pds.nasa.gov/pds4/mission/mars2020/v1                                             https://pds.nasa.gov/pds4/mission/mars2020/v1/PDS4_MARS2020_1G00_1000.xsd">
+  
+  <Identification_Area>
+    <logical_identifier>urn:nasa:pds:mars2020_meda:data_derived_env:we__0190___________der_ws__________________p</logical_identifier>
+    <version_id>2.0</version_id>
+    <title>Mars 2020 MEDA Wind Sensor Derived Data</title>
+    <information_model_version>1.16.0.0</information_model_version>
+    <product_class>Product_Observational</product_class>
+    <Modification_History>
+      <Modification_Detail>
+        <modification_date>2022-03-06</modification_date>
+        <version_id>1.0</version_id>
+        <description>First release</description>
+      </Modification_Detail>
+      <Modification_Detail>
+        <modification_date>2022-07-05</modification_date>
+        <version_id>2.0</version_id>
+        <description>Reprocessed</description>
+      </Modification_Detail>
+    </Modification_History>
+  </Identification_Area>
+  <Observation_Area>
+    <Time_Coordinates>
+      <start_date_time>2021-09-01T09:45:52.765Z</start_date_time>
+      <stop_date_time>2021-09-02T09:29:12.438Z</stop_date_time>
+    </Time_Coordinates>
+    <Primary_Result_Summary>
+      <purpose>Science</purpose>
+      <processing_level>Derived</processing_level>
+      <Science_Facets>
+        <domain>Atmosphere</domain>
+        <discipline_name>Atmospheres</discipline_name>
+        <facet1>Meteorology</facet1>
+      </Science_Facets>         
+    </Primary_Result_Summary>
+    <Investigation_Area>
+      <name>Mars 2020</name>
+      <type>Mission</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:investigation:mission.mars2020</lid_reference>
+        <reference_type>data_to_investigation</reference_type>
+        <comment>This is the PDS4 logical identifier for the Mars 2020 Perseverance Rover Mission.</comment>
+      </Internal_Reference>
+    </Investigation_Area>
+    <Observing_System>
+      <name>Mars 2020</name>
+      <Observing_System_Component>
+        <name>Mars Environmental Dynamics Analyzer</name>
+        <type>Instrument</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:instrument:mars2020.meda</lid_reference>
+          <reference_type>is_instrument</reference_type>
+          <comment>
+              This is the PDS4 logical identifier for the Mars 2020 Perseverance Rover.
+          </comment>
+        </Internal_Reference>
+      </Observing_System_Component>
+      <Observing_System_Component>
+        <name>Mars 2020</name>
+        <type>Host</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:instrument_host:spacecraft.mars2020</lid_reference>
+          <reference_type>is_instrument_host</reference_type>
+          <comment>
+              This is the PDS4 logical identifier for them MEDA instrument onboard the Mars 2020 Perseverance Rover.
+          </comment>
+        </Internal_Reference>
+      </Observing_System_Component>
+    </Observing_System>       
+    <Target_Identification>
+      <name>Mars</name>
+      <type>Planet</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:target:planet.mars</lid_reference>
+        <reference_type>data_to_target</reference_type>
+        <comment>Reference to the Planet - Mars target</comment>
+      </Internal_Reference>
+    </Target_Identification>
+    <Mission_Area>
+      <mars2020:Mars2020_Parameters>
+        <mars2020:Observation_Information>
+          <mars2020:release_number>3</mars2020:release_number>
+          <mars2020:mission_phase_name>Surface Mission</mars2020:mission_phase_name>
+          <mars2020:spacecraft_clock_start>683761330</mars2020:spacecraft_clock_start>
+          <mars2020:spacecraft_clock_stop>683846729</mars2020:spacecraft_clock_stop>
+          <mars2020:spacecraft_clock_partition>1</mars2020:spacecraft_clock_partition>
+          <mars2020:start_sol_number>00190</mars2020:start_sol_number>
+          <mars2020:stop_sol_number>00190</mars2020:stop_sol_number>
+          <mars2020:start_local_mean_solar_time>00190M00:00:00.580</mars2020:start_local_mean_solar_time>
+          <mars2020:stop_local_mean_solar_time>00190M23:05:15.325</mars2020:stop_local_mean_solar_time>
+          <mars2020:start_local_true_solar_time>0190 00:15:56</mars2020:start_local_true_solar_time>
+          <mars2020:stop_local_true_solar_time>0190 23:21:19</mars2020:stop_local_true_solar_time>
+          <mars2020:start_solar_longitude unit="deg">93.271</mars2020:start_solar_longitude>
+          <mars2020:stop_solar_longitude unit="deg">93.709</mars2020:stop_solar_longitude>
+        </mars2020:Observation_Information>
+      </mars2020:Mars2020_Parameters>
+    </Mission_Area>
+  </Observation_Area>
+  <Reference_List>
+    <Internal_Reference>
+      <lid_reference>urn:nasa:pds:mars2020_meda:document:meda_env_rdr_sis</lid_reference>
+      <reference_type>data_to_document</reference_type>
+    </Internal_Reference>
+  </Reference_List>
+  <File_Area_Observational>
+    <File>
+      <file_name>WE__0190___________DER_WS__________________P02.CSV</file_name>
+      <local_identifier>WE__0190___________DER_WS__________________P02_file</local_identifier>
+      <creation_date_time>2022-07-03T19:50:03.801Z</creation_date_time>
+      <file_size unit="byte">2418022</file_size>
+      <records>38490</records>
+      <md5_checksum>9ad76664f1b09e9895fc5622a4c368ac</md5_checksum>
+    </File>
+    <Header>
+      <name>Column headings for TABLE</name>
+      <local_identifier>HEADER</local_identifier>
+      <offset unit="byte">0</offset>
+      <object_length unit="byte">208</object_length>
+      <parsing_standard_id>PDS DSV 1</parsing_standard_id>
+    </Header>
+    <Table_Delimited>
+      <name>MEDA Wind Sensor Derived Data</name>
+      <local_identifier>TABLE</local_identifier>
+      <offset unit="byte">208</offset>
+      <parsing_standard_id>PDS DSV 1</parsing_standard_id>
+      <records>38489</records>
+      <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+      <field_delimiter>Comma</field_delimiter>
+      <Record_Delimited>
+        <fields>11</fields>
+        <groups>0</groups>
+        <Field_Delimited>
+          <name>SCLK</name>
+          <field_number>1</field_number>
+          <data_type>ASCII_Real</data_type>
+          <maximum_field_length unit="byte">15</maximum_field_length>
+          <unit>second</unit>
+          <description>
+            Spacecraft Clock, as approximated by MEDA internal clock,
+            at the time of the observation, without partition and
+            including decimal thousandths of a second
+          </description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>LMST</name>
+          <field_number>2</field_number>
+          <data_type>ASCII_String</data_type>
+          <maximum_field_length unit="byte">18</maximum_field_length>
+          <description>Local Mean Solar Time</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>LTST</name>
+          <field_number>3</field_number>
+          <data_type>ASCII_String</data_type>
+          <maximum_field_length unit="byte">18</maximum_field_length>
+          <description>Local True Solar Time</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>HORIZONTAL_WIND_SPEED</name>
+          <field_number>4</field_number>
+          <data_type>ASCII_Real</data_type>
+          <unit>meter/second</unit>
+          <description>Wind horizontal speed</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>HORIZONTAL_WIND_SPEED_UNCERTAINTY</name>
+          <field_number>5</field_number>
+          <data_type>ASCII_Real</data_type>
+          <description>Wind horizontal speed uncertainty</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>VERTICAL_WIND_SPEED</name>
+          <field_number>6</field_number>
+          <data_type>ASCII_Real</data_type>
+          <unit>meter/second</unit>
+          <description>Wind vertical speed</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>VERTICAL_WIND_SPEED_UNCERTAINTY</name>
+          <field_number>7</field_number>
+          <data_type>ASCII_Real</data_type>
+          <description>Wind vertical speed uncertainty</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>WIND_DIRECTION</name>
+          <field_number>8</field_number>
+          <data_type>ASCII_Real</data_type>
+          <unit>degree</unit>
+          <description>Wind direction</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>WIND_DIRECTION_UNCERTAINTY</name>
+          <field_number>9</field_number>
+          <data_type>ASCII_Real</data_type>
+          <description>Wind direction uncertainty</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>BOTH_BOOMS_USED_FOR_RETRIEVAL</name>
+          <field_number>10</field_number>
+          <data_type>ASCII_Integer</data_type>
+          <description>
+	    0 = only one boom was powered on and used to determine wind,
+	    1 = both booms were used to determine wind 
+          </description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>ROVER_STILL</name>
+          <field_number>11</field_number>
+          <data_type>ASCII_Integer</data_type>
+          <description>
+	    0 = Rover is moving,
+	    1 = Rover is motionless
+          </description>
+        </Field_Delimited>
+      </Record_Delimited>
+    </Table_Delimited>
+  </File_Area_Observational>
+</Product_Observational>

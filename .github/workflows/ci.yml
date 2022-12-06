@@ -1,0 +1,52 @@
+
+name: Build/Test Check
+
+on:
+  push:
+    branches:
+      - "main"
+
+
+  pull_request:
+    branches:
+      - "main"
+
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        
+        # Run in all these versions of Python
+        python-version: ['3.10']
+
+    steps:
+        # Checkout the latest code from the repo
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        # Setup which version of Python to use
+      - name: Set Up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+        # Display the Python version being used
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Set up permissions
+        run: chmod +x build.sh
+        # Run build.sh to set up package
+      - name: Install dependencies
+        run: ./build.sh
+        # Install pytest (you can use some other testing utility)
+      - name: Install pytest
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+        # Run the tests. I'm using pytest and the file is in the tests directory.
+      - name: Run tests
+        run: bash test.sh
+
+

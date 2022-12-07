@@ -1,0 +1,16 @@
+To use the API, you must be in the API directory
+cd muldoon/API
+
+Next, you run the following command in the working terminal:
+uvicorn main:app --reload
+
+This will load up our app and allow us to access our API through a local web browser
+Here are the following URLs that you can use
+
+http://127.0.0.1:8000/PS/{sol} - Gets our Pressure Series for provided sol
+http://127.0.0.1:8000/PSGap/{sol} - Pressure Series that color codes gaps in the output
+http://127.0.0.1:8000/PSDetrend/{sol} - Detrended PS data
+http://127.0.0.1:8000/PSVortex/{sol} - Detects vortex signals
+http://127.0.0.1:8000/ATS/{sol} - Temperature Series data
+http://127.0.0.1:8000/ATSDetrend/{sol} - As of now this is buggy, has to do with weird infinity value, still a work in progress
+http://127.0.0.1:8000/ATS_PS/{sol} - Combines temperature and pressure data

@@ -37,7 +37,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.3.6',  # Required
+    version='1.3.5',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -143,7 +143,7 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy', 'scipy', 'astropy', 'pandas', 'statsmodels'],  # Optional
+    install_requires=['numpy','pds4-tools','emcee', 'matplotlib', 'scipy', 'astropy', 'pandas', 'statsmodels'],  # Optional
 
 
     # List additional groups of dependencies here (e.g. development

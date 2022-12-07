@@ -7,7 +7,8 @@ from scipy.stats import mode
 from statsmodels.robust import mad
 
 import muldoon.utils as utils
-from emcee import *
+import muldoon.read_data as read_data
+
 
 __all__ = ['MetTimeseries']
 
@@ -26,7 +27,7 @@ class MetTimeseries(object):
 
         self.time = time
         # Calculate the sampling rate
-        self.sampling = mode(time[1:] - time[0:-1]).mode[0]
+        self.sampling = mode(time[1:] - time[0:-1], keepdims=True).mode[0]
 
         self.data = data
 
@@ -691,7 +692,7 @@ class TemperatureTimeseries(MetTimeseries):
         # The temperature vortex signals
         self.vortices = None
 
-    def _determine_init_params(self, vortex, init_t0=None, init_Gamma=None,
+    def _determine_init_params(self, vortex, init_t0, init_Gamma,
             init_baseline=None, init_slope=None, init_Delta=None):
         """
         Estimate reasonable initial parameters for fitting a vortex pressure
@@ -723,16 +724,10 @@ class TemperatureTimeseries(MetTimeseries):
         if(init_Delta is None):
             init_Delta = -np.abs(np.max(detrended_y) - np.min(detrended_y))
 
-        if(init_t0 is None):
-            init_t0 = x[np.argmax(detrended_y)]
-
-        if(init_Gamma is None):
-            init_Gamma = 5.*self.sampling
-
         return np.array([init_baseline, init_slope, init_t0, init_Delta, 
             init_Gamma])
 
-    def _determine_bounds(self, vortex, init_params, init_unc,
+    def _determine_bounds(self, vortex, init_params,
             slope_fac=10., Gamma_fac=1.):
         """
         Estimate reasonable bounds on fit parameters
@@ -779,3 +774,111 @@ class TemperatureTimeseries(MetTimeseries):
 
         return ([mn_baseline, mn_slope, mn_t0, mn_delta, mn_Gamma],
                 [mx_baseline, mx_slope, mx_t0, mx_delta, mx_Gamma])
+class WindSpeedTimeseries(MetTimeseries):
+    """
+    A meteorological time-series tailored to wind and used for 
+    looking for vortices
+    """
+    def __init__(self, time, wind_data, popts=None, uncs=None):
+        """
+        Args:
+            time (float, array): time of meteorological time-series
+            wind_data (float, array): wind speed measurements
+            popts/uncs (list of float arrays): the best-fit baseline, slope,
+            t0, Delta P, and FWHM values and uncertainties for a set of vortices
+            detected in the pressure time-series collected contemporaneously
+        """
+
+        super().__init__(time, wind_data, popts = popts, uncs = uncs)
+
+        # The wind speed vortex signals
+        self.vortices = None
+    
+    def _determine_init_params(self, vortex, init_t0=None, init_Gamma=None,
+            init_baseline=None, init_slope=None, init_DeltaP=None):
+        """
+        Estimate reasonable initial parameters for fitting a vortex pressure
+        signal
+
+        Args:
+            vortex (dict of float arrays): vortex["time"] - time, 
+            vortex["data"] - wind speed
+            init_* (float): initial parameters
+
+        Returns:
+            float array of initial parameter values
+
+        """
+        x = vortex["time"]
+        y = vortex["data"]
+
+        fit_params = np.polyfit(x, y, 1)
+        detrended_y = y - np.polyval(fit_params, x)
+
+        if(init_baseline is None):
+            init_baseline = np.median(y)
+
+        if(init_slope is None):
+            init_slope = (y[-1] - y[0])/(x[-1] - x[0])
+
+        if(init_t0 is None):
+            init_t0 = x[np.argmin(detrended_y)]
+
+        if(init_DeltaP is None):
+            init_DeltaP = np.max(detrended_y) - np.min(detrended_y) 
+
+        if(init_Gamma is None):
+            init_Gamma = 5.*self.sampling
+
+        return np.array([init_baseline, init_slope, init_t0, init_DeltaP, 
+            init_Gamma])
+            
+
+    def _determine_bounds(self, vortex, init_params,
+            slope_fac=10., Gamma_fac=1.):
+        """
+        Estimate reasonable bounds on fit parameters
+
+        Args:
+            vortex (dict of float arrays): vortex["time"] - time,
+            vortex["data"] - wind
+            init_params (float array): initial parameters in following order:
+                init_baseline, init_slope, init_t0, init_DeltaP, init_Gamma
+            slope_fac (float): maximum factor for slope upper bound
+            Gamma_fac (float): maximum factor for Gamma upper bound
+    
+        Returns:
+            float array with lower and upper bounds on fit parameters
+
+        """
+        x = vortex["time"]
+        y = vortex["data"]
+
+       # Initial fit to background trend
+        fit_params = np.polyfit(x, y, 1)
+        detrended_y = y - np.polyval(fit_params, x)
+
+        # Baseline probably doesn't exceed minimum or maximum y
+        mn_baseline = np.min(y)
+        mx_baseline = np.max(y)
+
+        # Slope unlikely to exceed overall slope
+        overall_slope = (y[-1] - y[0])/(x[-1] - x[0])
+        mn_slope = -slope_fac*np.abs(overall_slope)
+        mx_slope = slope_fac*np.abs(overall_slope)
+
+        mn_t0 = np.min(x)
+        mx_t0 = np.max(x)
+
+        # Can't have negative delta P's
+        mn_deltaP = 0.
+        mx_deltaP = np.max(detrended_y) - np.min(detrended_y)
+
+        mn_Gamma = 2.*self.sampling # Nyquist sampling
+        mx_Gamma = np.max([Gamma_fac*init_params[4], x[-1] - x[0]])
+
+        return ([mn_baseline, mn_slope, mn_t0, mn_deltaP, mn_Gamma],
+                [mx_baseline, mx_slope, mx_t0, mx_deltaP, mx_Gamma])
+
+    # TODO: Decide whether or not to implement make_conditioned_data_figure function
+    # TODO: Decide whether or not to implement injection/recovery for wind speed signal

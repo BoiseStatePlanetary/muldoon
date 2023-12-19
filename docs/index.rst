@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.3.8 (2023 Dec 19)**
+
+*  Fixed versioning
+
 **1.3.7 (2023 Dec 19)**
 
 *  Fixed teeny bug with mode in met_timeseries

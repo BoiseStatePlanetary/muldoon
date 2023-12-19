@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.3.6 (2023 Dec 19)**
+
+*  Updated requirements.txt to include newest scipy and emcee
+
 **1.3.5 (2022 Feb 24)**
 
 *  Fixed bug - pressure_timeseries_injection_recovery used wrong object

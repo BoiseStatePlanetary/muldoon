@@ -17,6 +17,7 @@ decorator==5.0.9
 defusedxml==0.7.1
 docutils==0.16
 entrypoints==0.3
+emcee==3.1.2
 idna==3.2
 imagesize==1.2.0
 importlib-metadata==3.10.0
@@ -79,7 +80,7 @@ readme-renderer==29.0
 requests==2.26.0
 requests-toolbelt==0.9.1
 rfc3986==1.5.0
-scipy==1.7.1
+scipy==1.11.4
 Send2Trash==1.5.0
 setuptools==52.0.0
 sip==4.19.13

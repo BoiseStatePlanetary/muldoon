@@ -27,7 +27,7 @@ class MetTimeseries(object):
 
         self.time = time
         # Calculate the sampling rate
-        self.sampling = mode(time[1:] - time[0:-1], keepdims=True).mode[0]
+        self.sampling = mode(time[1:] - time[0:-1]).mode
 
         self.data = data
 

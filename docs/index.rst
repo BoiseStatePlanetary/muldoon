@@ -23,6 +23,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.3.7 (2023 Dec 19)**
+
+*  Fixed teeny bug with mode in met_timeseries
+
 **1.3.6 (2023 Dec 19)**
 
 *  Updated requirements.txt to include newest scipy and emcee

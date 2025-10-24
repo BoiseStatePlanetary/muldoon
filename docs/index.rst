@@ -13,6 +13,30 @@ Welcome to Muldoon's documentation!
    examples
    api
 
+
+Quickstart
+==========
+
+#. Install the latest released version from the Python Package Index `PyPi <https://pypi.org/project/muldoon/>`_:
+
+   .. code-block:: shell
+
+      pip install muldoon
+
+#. Include at the top of your Python file or notebook:
+
+   .. code-block:: python
+
+      import muldoon
+
+   or 
+
+   .. code-block:: python
+
+      from muldoon.met_timeseries import MetTimeseries
+      from muldoon.utils import *
+      from muldoon.read_data import *
+
 Indices and tables
 ==================
 
@@ -22,6 +46,11 @@ Indices and tables
 
 Changelog:
 ++++++++++
+
+**1.3.9 (2025 Oct 24)**
+
+*  Updated call to scipy.signal.boxcar
+*  Added .readthedocs.yaml
 
 **1.3.8 (2023 Dec 19)**
 

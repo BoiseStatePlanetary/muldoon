@@ -1,7 +1,8 @@
 import numpy as np
 from numpy.random import choice
 import matplotlib.pyplot as plt
-from scipy.signal import find_peaks, peak_widths, boxcar
+from scipy.signal import find_peaks, peak_widths
+from scipy.signal.windows import boxcar
 from astropy.convolution import convolve as astropy_convolve
 from scipy.stats import mode
 from statsmodels.robust import mad

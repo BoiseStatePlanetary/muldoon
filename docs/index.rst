@@ -47,6 +47,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.3.11 (2025 Nov 3)**
+
+*  Updated requirements.txt
+
 **1.3.10 (2025 Nov 3)**
 
 *  Updated Analyzing_Mars_2020_MEDA_Data.ipynb to incorporate changes from BSU Capstone team to source code

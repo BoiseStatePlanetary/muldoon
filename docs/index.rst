@@ -47,6 +47,10 @@ Indices and tables
 Changelog:
 ++++++++++
 
+**1.3.12 (2026 Mar 30)**
+
+*  Removed unnecessary print statement in read_data.py
+
 **1.3.11 (2025 Nov 3)**
 
 *  Updated requirements.txt

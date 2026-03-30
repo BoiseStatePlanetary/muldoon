@@ -289,7 +289,7 @@ def __read_data(filename:str):
             print(error_message)
             file_status = 0
     else:
-        print("Processing file: " + filename)
+#       print("Processing file: " + filename)
         try:
             data = pd.read_csv(filename)
             file_status = 1
